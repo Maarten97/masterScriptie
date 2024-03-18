@@ -29,14 +29,14 @@ def load_data_from_xml(data_directory, csvFile):
             if csvWrite:
                 with open(csvFile, "a", newline="") as csvfile:
                     fieldnames = ["bron", "text"]
-                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
                     writer.writeheader()
 
                     for item in root.findall(".//al"):
                         al_text = item.text
                         if al_text is not None:
-                                writer.writerow({"bron": os.path.splitext(filename)[0], "text": al_text.strip()})
-                                lineCounter += 1
+                            writer.writerow({"bron": os.path.splitext(filename)[0], "text": process_xml_text(al_text)})
+                            lineCounter += 1
                         else:
                             print("al_text looks to be empty")
                             emptyPrinter += 1
@@ -45,8 +45,8 @@ def load_data_from_xml(data_directory, csvFile):
                 for item in root.findall(".//al"):
                     al_text = item.text
                     if al_text is not None:
-                            data.append(al_text.strip())
-                            lineCounter += 1
+                        data.append(process_xml_text(al_text))
+                        lineCounter += 1
                     else:
                         print("al_text looks to be empty")
                         emptyPrinter += 1
@@ -56,8 +56,30 @@ def load_data_from_xml(data_directory, csvFile):
     print(f"LineCounter: {lineCounter}")
     return data
 
+
+def process_xml_text(al_text):
+    # Removes all breaklines
+    if "\n" in al_text:
+        al_text = al_text.replace('\n', '')
+    if "\r" in al_text:
+        al_text = al_text.replace('\r', '')
+
+    # Remove all extra whitespaces at the beginning or the end of the String
+    al_text = al_text.strip()
+
+    # Remove multiple whitespaces
+    al_text = ' '.join(al_text.split())
+
+    # Remove the ' " ' at the beginning or ending of every String
+    if al_text.startswith('"'):
+        al_text = al_text[1:]
+    if al_text.endswith('"'):
+        al_text = al_text[:-1]
+    return al_text
+
+
 if __name__ == "__main__":
     dataDirectory = "C:/Users/looij/PycharmProjects/masterScriptie/Data/Wetboeken"
-    csvFile = "Data/Output/BurgelijkWetboekCSV.csv"
+    csvFile = "Data/Output/BurgelijkWetboekCSV2.csv"
     dataSet = load_data_from_xml(dataDirectory, csvFile)
     # print(dataSet)
