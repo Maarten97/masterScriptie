@@ -3,7 +3,7 @@ import csv
 import os
 import xml.etree.ElementTree as ET
 
-csvWrite = True
+csvWrite = False
 
 
 ##Function to retrieve all XML files from Directory
@@ -11,6 +11,7 @@ def load_data_from_xml(data_directory, csvFile):
     data = []
     emptyPrinter = 0
     lineCounter = 0
+    vervallenCounter = 0
 
     ##Create and Initialze CSV file
     if csvWrite:
@@ -33,20 +34,26 @@ def load_data_from_xml(data_directory, csvFile):
                     writer.writeheader()
 
                     for item in root.findall(".//al"):
-                        al_text = item.text
-                        if al_text is not None:
-                            writer.writerow({"bron": os.path.splitext(filename)[0], "text": process_xml_text(al_text)})
+                        al_text = process_xml_text(item)
+                        if al_text is not None and al_text is not "Vervallen":
+                            writer.writerow({"bron": os.path.splitext(filename)[0], "text": al_text})
                             lineCounter += 1
+                        elif al_text is "Vervallen":
+                            print("Artikel is vervallen")
+                            vervallenCounter += 1
                         else:
                             print("al_text looks to be empty")
                             emptyPrinter += 1
 
             else:
                 for item in root.findall(".//al"):
-                    al_text = item.text
-                    if al_text is not None:
-                        data.append(process_xml_text(al_text))
+                    al_text = process_xml_text(item)
+                    if al_text is not None and al_text is not "Vervallen":
+                        data.append(al_text)
                         lineCounter += 1
+                    elif al_text is "Vervallen":
+                        print("Artikel is vervallen")
+                        vervallenCounter += 1
                     else:
                         print("al_text looks to be empty")
                         emptyPrinter += 1
@@ -54,10 +61,13 @@ def load_data_from_xml(data_directory, csvFile):
             print("Finished loading XML file: " + filename)
     print(f"EmptyPrinter: {emptyPrinter}")
     print(f"LineCounter: {lineCounter}")
+    print(f"vervallenCounter: {vervallenCounter}")
     return data
 
 
-def process_xml_text(al_text):
+def process_xml_text(item):
+    al_text = ''.join(item.itertext())
+
     # Removes all breaklines
     if "\n" in al_text:
         al_text = al_text.replace('\n', '')
@@ -75,11 +85,16 @@ def process_xml_text(al_text):
         al_text = al_text[1:]
     if al_text.endswith('"'):
         al_text = al_text[:-1]
+
+    ##BUGFIXING
+    if "Vervallen" in al_text:
+        print("test1")
     return al_text
 
-
+### INITIAL
 if __name__ == "__main__":
     dataDirectory = "C:/Users/looij/PycharmProjects/masterScriptie/Data/Wetboeken"
-    csvFile = "Data/Output/BurgelijkWetboekCSV2.csv"
+    csvFile = "Data/Output/BurgelijkWetboekCSV.csv"
     dataSet = load_data_from_xml(dataDirectory, csvFile)
-    # print(dataSet)
+    # if not csvWrite:
+        # print(dataSet)
