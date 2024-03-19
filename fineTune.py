@@ -20,7 +20,6 @@ def load_data_from_xml(data_directory, csvFile):
 
     ##Read from XML and write to CSV
     for filename in os.listdir(data_directory):
-        print(filename)
         if filename.endswith(".xml"):
             print("Currently loading XML file: " + filename)
             filepath = os.path.join(data_directory, filename)
