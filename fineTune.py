@@ -3,6 +3,7 @@ import csv
 import os
 import xml.etree.ElementTree as ET
 
+#For testing, does not write to CSV file when set to False
 csvWrite = True
 
 ##Function to retrieve all XML files from Directory
@@ -35,32 +36,28 @@ def load_data_from_xml(data_directory, csvFile):
                     for item in root.findall(".//al"):
                         al_text = process_xml_text(item)
                         if al_text == "Vervallen" or al_text == "Vervallen.":
-                            print("Artikel is vervallen")
                             vervallenCounter += 1
                         elif al_text is not None:
                             writer.writerow({"bron": os.path.splitext(filename)[0], "text": al_text})
                             lineCounter += 1
                         else:
-                            print("al_text looks to be empty")
                             emptyPrinter += 1
 
             else:
                 for item in root.findall(".//al"):
                     al_text = process_xml_text(item)
                     if al_text == "Vervallen" or al_text == "Vervallen.":
-                        print("Artikel is vervallen")
                         vervallenCounter += 1
                     elif al_text is not None:
                         data.append(al_text)
                         lineCounter += 1
                     else:
-                        print("al_text looks to be empty")
                         emptyPrinter += 1
 
             print("Finished loading XML file: " + filename)
-    print(f"EmptyPrinter: {emptyPrinter}")
-    print(f"LineCounter: {lineCounter}")
-    print(f"vervallenCounter: {vervallenCounter}")
+    print(f"Aantal lege velden (errors): {emptyPrinter}")
+    print(f"Aantal opgeslagen regels: {lineCounter}")
+    print(f"Aantal artikelen die reeds vervallen zijn: {vervallenCounter}")
     return data
 
 
@@ -90,7 +87,7 @@ def process_xml_text(item):
 ### INITIAL
 if __name__ == "__main__":
     dataDirectory = "C:/Users/looij/PycharmProjects/masterScriptie/Data/Wetboeken"
-    csvFile = "Data/Output/BurgelijkWetboekCSV3.csv"
+    csvFile = "Data/Output/BurgelijkWetboekCSV.csv"
     dataSet = load_data_from_xml(dataDirectory, csvFile)
     # if not csvWrite:
         # print(dataSet)
