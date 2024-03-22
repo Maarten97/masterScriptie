@@ -4,7 +4,7 @@ import os
 import xml.etree.ElementTree as ET
 
 #For testing, does not write to CSV file when set to False
-csvWrite = True
+csvWrite = False
 
 ##Function to retrieve all XML files from Directory
 def load_data_from_xml(data_directory, csvFile):
@@ -12,6 +12,7 @@ def load_data_from_xml(data_directory, csvFile):
     emptyPrinter = 0
     lineCounter = 0
     vervallenCounter = 0
+    wordCounter = 0
 
     ##Create and Initialze CSV file
     if csvWrite:
@@ -38,6 +39,7 @@ def load_data_from_xml(data_directory, csvFile):
                             vervallenCounter += 1
                         elif al_text is not None:
                             writer.writerow({"bron": os.path.splitext(filename)[0], "text": al_text})
+                            wordCounter += word_count(al_text)
                             lineCounter += 1
                         else:
                             emptyPrinter += 1
@@ -49,6 +51,7 @@ def load_data_from_xml(data_directory, csvFile):
                         vervallenCounter += 1
                     elif al_text is not None:
                         data.append(al_text)
+                        wordCounter += word_count(al_text)
                         lineCounter += 1
                     else:
                         emptyPrinter += 1
@@ -57,6 +60,7 @@ def load_data_from_xml(data_directory, csvFile):
     print(f"Aantal lege velden (errors): {emptyPrinter}")
     print(f"Aantal opgeslagen regels: {lineCounter}")
     print(f"Aantal artikelen die reeds vervallen zijn: {vervallenCounter}")
+    print(f"Aantal opgeslagen woorden: {wordCounter}")
     return data
 
 
@@ -83,9 +87,13 @@ def process_xml_text(item):
 
     return al_text
 
+def word_count(string):
+    words_list = string.strip().split(" ")
+    return len(words_list)
+
 ### INITIAL
 if __name__ == "__main__":
-    dataDirectory = "C:/Users/looij/PycharmProjects/masterScriptie/Data/Wetboeken"
+    dataDirectory = "Data/Wetboeken"
     csvFile = "Data/Output/BurgelijkWetboekCSV.csv"
     dataSet = load_data_from_xml(dataDirectory, csvFile)
     # if not csvWrite:
