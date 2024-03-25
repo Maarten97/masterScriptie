@@ -6,6 +6,17 @@ import xml.etree.ElementTree as ET
 # For testing, does not write to CSV file when set to False
 csvWrite = True
 
+# Often reoccuring strings in Dutch Lawbooks, removed for better accuracy
+invalid_stings = [
+    "bevat overgangsrecht m.b.t. deze wijziging",
+    "bevatten overgangsrecht m.b.t. deze wijziging",
+    "Tekstplaatsing met vernummering",
+    "De gegevens van inwerkingtreding zijn ontleend aan de bron van aankondiging van de tekstplaatsing",
+    "De datum van inwerkingtreding is ontleend aan de bron van aankondiging van de tekstplaatsing",
+    "Abusievelijk is een wijzigingsopdracht geformuleerd die niet geheel juist is",
+    "Vervalt behoudens voor zover het betreft de toepassing of overeenkomstige toepassing van deze artikelen "
+]
+
 
 # Function to retrieve all XML files from Directory
 def load_data_from_xml(data_directory, csv_file):
@@ -13,6 +24,7 @@ def load_data_from_xml(data_directory, csv_file):
     empty_printer = 0
     line_counter = 0
     vervallen_counter = 0
+    invalid_counter = 0
     word_counter = 0
     write_header = False
 
@@ -41,6 +53,8 @@ def load_data_from_xml(data_directory, csv_file):
                         al_text = process_xml_text(item)
                         if al_text == "Vervallen" or al_text == "Vervallen.":
                             vervallen_counter += 1
+                        elif al_text == "Invalid":
+                            invalid_counter += 1
                         elif al_text is not None:
                             writer.writerow({"bron": os.path.splitext(filename)[0], "text": al_text})
                             word_counter += word_count(al_text)
@@ -53,6 +67,8 @@ def load_data_from_xml(data_directory, csv_file):
                     al_text = process_xml_text(item)
                     if al_text == "Vervallen" or al_text == "Vervallen.":
                         vervallen_counter += 1
+                    elif al_text == "Invalid":
+                        invalid_counter += 1
                     elif al_text is not None:
                         data.append(al_text)
                         word_counter += word_count(al_text)
@@ -64,6 +80,7 @@ def load_data_from_xml(data_directory, csv_file):
     print(f"Aantal lege velden (errors): {empty_printer}")
     print(f"Aantal opgeslagen regels: {line_counter}")
     print(f"Aantal artikelen die reeds vervallen zijn: {vervallen_counter}")
+    print(f"Aantal artikelen die manueel verwijderd zijn: {invalid_counter}")
     print(f"Aantal opgeslagen woorden: {word_counter}")
     return data
 
@@ -88,6 +105,15 @@ def process_xml_text(item):
         al_text = al_text[1:]
     if al_text.endswith('"'):
         al_text = al_text[:-1]
+
+    # Check if String is staring with '['
+    if al_text.startswith('[') and al_text.endswith(']'):
+        al_text = "Invalid"
+
+    # Check if String is invalid according to definition
+    for i in invalid_stings:
+        if i in al_text:
+            al_text = "Invalid"
 
     return al_text
 
