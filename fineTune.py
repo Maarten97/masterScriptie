@@ -1,25 +1,27 @@
-## This script will load and preprocess my dataset.
+# This script will load and preprocess my dataset.
 import csv
 import os
 import xml.etree.ElementTree as ET
 
-#For testing, does not write to CSV file when set to False
-csvWrite = False
+# For testing, does not write to CSV file when set to False
+csvWrite = True
 
-##Function to retrieve all XML files from Directory
-def load_data_from_xml(data_directory, csvFile):
+
+# Function to retrieve all XML files from Directory
+def load_data_from_xml(data_directory, csv_file):
     data = []
-    emptyPrinter = 0
-    lineCounter = 0
-    vervallenCounter = 0
-    wordCounter = 0
+    empty_printer = 0
+    line_counter = 0
+    vervallen_counter = 0
+    word_counter = 0
+    write_header = False
 
-    ##Create and Initialze CSV file
+    # Create and Initialze CSV file
     if csvWrite:
-        output_dir = os.path.dirname(csvFile)
+        output_dir = os.path.dirname(csv_file)
         os.makedirs(output_dir, exist_ok=True)
 
-    ##Read from XML and write to CSV
+    # Read from XML and write to CSV
     for filename in os.listdir(data_directory):
         if filename.endswith(".xml"):
             print("Currently loading XML file: " + filename)
@@ -28,39 +30,41 @@ def load_data_from_xml(data_directory, csvFile):
             root = tree.getroot()
 
             if csvWrite:
-                with open(csvFile, "a", newline="") as csvfile:
+                with open(csv_file, "a", newline="") as csvfile:
                     fieldnames = ["bron", "text"]
                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
-                    writer.writeheader()
+                    if not write_header:
+                        writer.writeheader()
+                        write_header = True
 
                     for item in root.findall(".//al"):
                         al_text = process_xml_text(item)
                         if al_text == "Vervallen" or al_text == "Vervallen.":
-                            vervallenCounter += 1
+                            vervallen_counter += 1
                         elif al_text is not None:
                             writer.writerow({"bron": os.path.splitext(filename)[0], "text": al_text})
-                            wordCounter += word_count(al_text)
-                            lineCounter += 1
+                            word_counter += word_count(al_text)
+                            line_counter += 1
                         else:
-                            emptyPrinter += 1
+                            empty_printer += 1
 
             else:
                 for item in root.findall(".//al"):
                     al_text = process_xml_text(item)
                     if al_text == "Vervallen" or al_text == "Vervallen.":
-                        vervallenCounter += 1
+                        vervallen_counter += 1
                     elif al_text is not None:
                         data.append(al_text)
-                        wordCounter += word_count(al_text)
-                        lineCounter += 1
+                        word_counter += word_count(al_text)
+                        line_counter += 1
                     else:
-                        emptyPrinter += 1
+                        empty_printer += 1
 
             print("Finished loading XML file: " + filename)
-    print(f"Aantal lege velden (errors): {emptyPrinter}")
-    print(f"Aantal opgeslagen regels: {lineCounter}")
-    print(f"Aantal artikelen die reeds vervallen zijn: {vervallenCounter}")
-    print(f"Aantal opgeslagen woorden: {wordCounter}")
+    print(f"Aantal lege velden (errors): {empty_printer}")
+    print(f"Aantal opgeslagen regels: {line_counter}")
+    print(f"Aantal artikelen die reeds vervallen zijn: {vervallen_counter}")
+    print(f"Aantal opgeslagen woorden: {word_counter}")
     return data
 
 
@@ -87,14 +91,16 @@ def process_xml_text(item):
 
     return al_text
 
+
 def word_count(string):
     words_list = string.strip().split(" ")
     return len(words_list)
 
-### INITIAL
+
+# INITIAL
 if __name__ == "__main__":
     dataDirectory = "Data/Wetboeken"
-    csvFile = "Data/Output/BurgelijkWetboekCSV.csv"
+    csvFile = "Data/Output/BurgelijkWetboekCSVall.csv"
     dataSet = load_data_from_xml(dataDirectory, csvFile)
     # if not csvWrite:
-        # print(dataSet)
+    #     print(dataSet)
