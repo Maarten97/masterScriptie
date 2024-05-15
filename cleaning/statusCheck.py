@@ -3,8 +3,11 @@ import csv
 import xml.etree.ElementTree as ET
 
 root_dir = 'D:/BWB/Subset2'
-output_dir = 'D:/BWB/Output/VersionControl'
+output_dir = 'D:/BWB/Output/statusCheck'
 root_folder = ['202210_BWB_1', '202210_BWB_2', '202210_BWB_3', '202210_BWB_4']
+
+write_header = False
+
 
 def manifest_lookup():
     for folder in root_folder:
@@ -16,7 +19,8 @@ def manifest_lookup():
 
                     data.append(os.path.basename(os.path.dirname(manifest_path)))
                     data.extend(manifest_reading(manifest_path))
-                    print(data)
+
+                    write_to_csv(data)
 
 
 def manifest_reading(manifest_path):
@@ -46,9 +50,17 @@ def write_to_csv(data):
     with open(output_file, "a", newline="") as csvfile:
         fieldnames = ["id", "Datum inwerking", "Status", "Datum intrekking"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
+
         if not write_header:
             writer.writeheader()
-            write_header = True
+            modify_bool()
+
+        writer.writerows({"id": data[0], "Datum inwerking": data[1], "Status": data[2], "Datum intrekking": data[3]})
+
+
+def modify_bool():
+    global write_header
+    write_header = True
 
 
 if __name__ == "__main__":
