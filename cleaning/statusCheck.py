@@ -2,8 +2,8 @@ import os
 import csv
 import xml.etree.ElementTree as ET
 
-root_dir = 'D:/BWB/Subset2'
-output_dir = 'D:/BWB/Output/statusCheck'
+root_dir = 'D:/BWB/Subset'
+output_dir = 'D:/BWB/Output/statusCheck.csv'
 root_folder = ['202210_BWB_1', '202210_BWB_2', '202210_BWB_3', '202210_BWB_4']
 
 write_header = False
@@ -19,7 +19,7 @@ def manifest_lookup():
 
                     data.append(os.path.basename(os.path.dirname(manifest_path)))
                     data.extend(manifest_reading(manifest_path))
-
+                    print(data)
                     write_to_csv(data)
 
 
@@ -44,7 +44,7 @@ def manifest_reading(manifest_path):
 
 
 def write_to_csv(data):
-    output_file = output_dir + "/statusCheck.csv"
+    output_file = os.path.dirname(output_dir)
     os.makedirs(output_file, exist_ok=True)
 
     with open(output_file, "a", newline="") as csvfile:
