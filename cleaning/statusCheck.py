@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 
 root_dir = 'D:/BWB/Origineel'
 output_dir = "D:/BWB/Output"
-file_name = "statusCheck.csv"
+file_name = "statusCheckall.csv"
 root_folder = ['202210_BWB_1', '202210_BWB_2', '202210_BWB_3', '202210_BWB_4']
 
 
@@ -27,8 +27,14 @@ def manifest_reading(manifest_path):
     root = tree.getroot()
 
     primary_metadata = root.find("./metadata")
-    data.append(primary_metadata.find("datum_inwerkingtreding").text)
-    # status = ""
+
+    datum_inwerkingtreding = primary_metadata.find("datum_inwerkingtreding")
+    if datum_inwerkingtreding is not None:
+        data.append(datum_inwerkingtreding.text)
+    else:
+        data.append("ERROR")
+        print("ERROR AT: " + manifest_path)
+
     datum_intrekking = primary_metadata.find("datum_intrekking")
     if datum_intrekking is not None:
         datum_intrekking = datum_intrekking.text
