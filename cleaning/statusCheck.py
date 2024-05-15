@@ -2,11 +2,10 @@ import os
 import csv
 import xml.etree.ElementTree as ET
 
-root_dir = 'D:/BWB/Subset'
-output_dir = 'D:/BWB/Output/statusCheck.csv'
+root_dir = 'D:/BWB/Origineel'
+output_dir = "D:/BWB/Output"
+file_name = "statusCheck.csv"
 root_folder = ['202210_BWB_1', '202210_BWB_2', '202210_BWB_3', '202210_BWB_4']
-
-write_header = False
 
 
 def manifest_lookup():
@@ -19,7 +18,6 @@ def manifest_lookup():
 
                     data.append(os.path.basename(os.path.dirname(manifest_path)))
                     data.extend(manifest_reading(manifest_path))
-                    print(data)
                     write_to_csv(data)
 
 
@@ -44,23 +42,17 @@ def manifest_reading(manifest_path):
 
 
 def write_to_csv(data):
-    output_file = os.path.dirname(output_dir)
-    os.makedirs(output_file, exist_ok=True)
-
-    with open(output_file, "a", newline="") as csvfile:
-        fieldnames = ["id", "Datum inwerking", "Status", "Datum intrekking"]
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
-
-        if not write_header:
+    fieldnames = ["id", "Datum inwerking", "Status", "Datum intrekking"]
+    if not os.path.exists(os.path.join(output_dir, file_name)):
+        with open(os.path.join(output_dir, file_name), "w", newline="") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
-            modify_bool()
-
-        writer.writerows({"id": data[0], "Datum inwerking": data[1], "Status": data[2], "Datum intrekking": data[3]})
-
-
-def modify_bool():
-    global write_header
-    write_header = True
+            writer.writerow({"id": data[0], "Datum inwerking": data[1], "Status": data[2], "Datum intrekking": data[3]})
+        print("Wrote to", os.path.join(output_dir, file_name))
+    else:
+        with open(os.path.join(output_dir, file_name), "a", newline="") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writerow({"id": data[0], "Datum inwerking": data[1], "Status": data[2], "Datum intrekking": data[3]})
 
 
 if __name__ == "__main__":
