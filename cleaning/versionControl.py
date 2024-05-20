@@ -16,8 +16,9 @@ def folder_lookup():
                 output_path = os.path.join(output_dir, bwbid)
 
                 date = newest_date(bwb_path)
-                date_path = os.path.join(bwb_path, date)
-                copy_xml(date_path, output_path)
+                if date is not 'EMPTY':
+                    date_path = os.path.join(bwb_path, date)
+                    copy_xml(date_path, output_path)
 
 
 def newest_date(input_path):
@@ -45,8 +46,8 @@ def newest_date(input_path):
         newest_folder = sorted_folders[0][2]
         return newest_folder
     else:
-        print("No date found in folder " + input_path)
-        exit(-2)
+        write_to_txt("No date found in folder " + input_path)
+        return 'EMPTY'
 
 
 def copy_xml(input_path, output_path):
@@ -58,6 +59,16 @@ def copy_xml(input_path, output_path):
                 destination_path = os.path.join(output_path, filename)
                 shutil.copy2(source_path, destination_path)
                 print(f"Copied {source_path} to {destination_path}")
+
+
+def write_to_txt(text):
+    error_dir = 'logfile/versionControl.txt'
+    if not os.path.exists(error_dir):
+        with open(error_dir, "w") as txtfile:
+            txtfile.write(text + "\n")
+    else:
+        with open(error_dir, "a") as txtfile:
+            txtfile.write(text + "\n")
 
 
 # INITIAL
