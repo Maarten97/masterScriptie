@@ -2,8 +2,8 @@ import datetime
 import os
 import shutil
 
-root_dir = 'D:/BWB/Subset'
-output_dir = 'D:/BWB/Output/VersionControl'
+root_dir = 'M:/BWB/Origineel'
+output_dir = 'M:/BWB/Output/VersionControl'
 root_folder = ['202210_BWB_1', '202210_BWB_2', '202210_BWB_3', '202210_BWB_4']
 
 
