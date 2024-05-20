@@ -33,7 +33,7 @@ def manifest_reading(manifest_path):
         data.append(datum_inwerkingtreding.text)
     else:
         data.append("ERROR")
-        print("ERROR AT: " + manifest_path)
+        write_to_txt("ERROR AT: " + manifest_path + ". No attribute datum_inwerkingtreding.")
 
     datum_intrekking = primary_metadata.find("datum_intrekking")
     if datum_intrekking is not None:
@@ -59,6 +59,16 @@ def write_to_csv(data):
         with open(os.path.join(output_dir, file_name), "a", newline="") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writerow({"id": data[0], "Datum inwerking": data[1], "Status": data[2], "Datum intrekking": data[3]})
+
+
+def write_to_txt(text):
+    error_dir = 'logfile/statusCheck.txt'
+    if not os.path.exists(error_dir):
+        with open(error_dir, "w") as txtfile:
+            txtfile.write(text + "\n")
+    else:
+        with open(error_dir, "a") as txtfile:
+            txtfile.write(text + "\n")
 
 
 if __name__ == "__main__":
