@@ -1,8 +1,8 @@
 import os
 import csv
 
-root_dir = 'D:/BWB/Origineel'
-output_dir = 'D:/BWB/Output/ExtentionCleaned.csv'
+root_dir = 'M:/BWB/Origineel'
+output_dir = 'M:/BWB/Output/Extention/ExtentionCleaned.csv'
 okay_extensions = ['.xml', '.xsd', '.wti']
 
 

@@ -2,8 +2,8 @@ import os
 import csv
 import xml.etree.ElementTree as ET
 
-root_dir = 'D:/BWB/Origineel'
-output_dir = "D:/BWB/Output"
+root_dir = 'M:/BWB/Origineel'
+output_dir = "M:/BWB/Output/Status"
 file_name = "statusCheckall.csv"
 root_folder = ['202210_BWB_1', '202210_BWB_2', '202210_BWB_3', '202210_BWB_4']
 
@@ -54,7 +54,6 @@ def write_to_csv(data):
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerow({"id": data[0], "Datum inwerking": data[1], "Status": data[2], "Datum intrekking": data[3]})
-        print("Wrote to", os.path.join(output_dir, file_name))
     else:
         with open(os.path.join(output_dir, file_name), "a", newline="") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
