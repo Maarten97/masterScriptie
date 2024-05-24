@@ -61,7 +61,7 @@ def write_to_csv(data):
 
 
 def write_to_txt(text):
-    error_dir = 'logfile/statusCheck.txt'
+    error_dir = '../Data/logfile/statusCheck.txt'
     if not os.path.exists(error_dir):
         with open(error_dir, "w") as txtfile:
             txtfile.write(text + "\n")

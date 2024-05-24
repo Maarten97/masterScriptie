@@ -1,11 +1,11 @@
 import os
 import csv
 import xml.etree.ElementTree as ET
+import bwbWriteGeneral
 
 # root_dir = 'D:/BWB/Origineel/202210_BWB_4'
 root_dir = 'C:/Users/looij/Documents/BWB/Subset2/202210_BWB_4'
 output_dir = 'D:/BWB/Output/Verdrag'
-error_file = 'D:/BWB/Output/Verdrag/error.txt'
 
 
 # Requires already that are not more versions in the file
@@ -23,9 +23,7 @@ def language_check(dlist):
         for filename in os.listdir(direc):
             if filename.endswith(".xml"):
                 print("Currently loading XML file: " + filename)
-                filepath = os.path.join(direc, filename)
-                tree = ET.parse(filepath)
-                root = tree.getroot()
+                bwbWriteGeneral.write_error("bwbVerdragSelect", "Error in file: " + filename + ". No more code.")
 
 
 if __name__ == "__main__":
