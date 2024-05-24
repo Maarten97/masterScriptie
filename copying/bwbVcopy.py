@@ -51,4 +51,4 @@ def language_check(dlist):
 if __name__ == "__main__":
     dirlist = folder_lookup()
     language_check(dirlist)
-    print("Code statusCheck executed")
+    print("Code bwbVcopy executed")
