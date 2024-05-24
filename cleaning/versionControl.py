@@ -2,8 +2,8 @@ import datetime
 import os
 import shutil
 
-root_dir = 'M:/BWB/Origineel'
-output_dir = 'M:/BWB/Output/VersionControl'
+root_dir = 'C:/Users/looij/Documents/BWB/Subset2'
+output_dir = 'C:/Users/looij/Documents/BWB/Output'
 root_folder = ['202210_BWB_1', '202210_BWB_2', '202210_BWB_3', '202210_BWB_4']
 
 
@@ -16,7 +16,7 @@ def folder_lookup():
                 output_path = os.path.join(output_dir, bwbid)
 
                 date = newest_date(bwb_path)
-                if date is not 'EMPTY':
+                if date != 'EMPTY':
                     date_path = os.path.join(bwb_path, date)
                     copy_xml(date_path, output_path)
 

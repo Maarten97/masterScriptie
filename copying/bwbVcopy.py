@@ -29,9 +29,9 @@ def language_check(dlist):
     for direc in dlist:
         for filename in os.listdir(direc):
             if filename.endswith(".xml"):
-                dutch_found = False
                 print("Currently loading XML file: " + filename)
                 filepath = os.path.join(direc, filename)
+                bwbid = os.path.basename(direc)
                 tree = ET.parse(filepath)
                 root = tree.getroot()
 
@@ -43,7 +43,7 @@ def language_check(dlist):
                         for text_element in text_elements_in_verdrag:
                             al_text = bwbXMLprocess.process_xml_text(text_element)
                             if al_text is not None and al_text != "SKIP":
-                                bwbWriteGeneral.write_general(direc, filename.split(".")[0], al_text)
+                                bwbWriteGeneral.write_general(direc, bwbid, al_text)
                 else:
                     bwbWriteGeneral.write_error("bwbVcopy", "No Dutch verdrag in XML file: " + filename)
 
