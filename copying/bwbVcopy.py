@@ -5,7 +5,7 @@ import bwbXMLprocess
 import bwbWriteGeneral
 
 # root_dir = 'D:/BWB/Origineel/202210_BWB_4'
-root_dir = 'C:/Users/looij/Documents/BWB/Subset2/202210_BWB_4'
+root_dir = 'C:/Users/looij/Documents/BWB/Output'
 
 
 # Requires already that are not more versions in the file
@@ -33,7 +33,7 @@ def language_check(dlist):
                     for text_element in text_elements_in_verdrag:
                         # Write to CSV
                         al_text = bwbXMLprocess.process_xml_text(text_element)
-                        if al_text is not None or al_text is not "SKIP":
+                        if al_text is not None or al_text != "SKIP":
                             bwbWriteGeneral.write_general(direc, filename, al_text)
 
 
