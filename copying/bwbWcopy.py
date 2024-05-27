@@ -6,10 +6,6 @@ import bwbWriteGeneral
 
 root_dir = 'C:/Users/looij/Documents/BWB/Output'
 
-namespaces = {
-    "xml": "http://www.w3.org/XML/1998/namespace",
-    "xsi": "http://www.w3.org/2001/XMLSchema-instance"
-}
 
 def folder_lookup():
     dirlist = []
@@ -19,12 +15,24 @@ def folder_lookup():
                 dirlist.append(os.path.join(root_dir, bwbid))
     return dirlist
 
-# TODO
-def language_check(dirlist):
-    pass
+
+def to_csv(dlist):
+    for direc in dlist:
+        for filename in os.listdir(direc):
+            if filename.endswith(".xml"):
+                print("Currently loading XML file: " + filename)
+                filepath = os.path.join(direc, filename)
+                bwbid = os.path.basename(direc)
+                tree = ET.parse(filepath)
+                root = tree.getroot()
+
+                for item in root.findall(".//al"):
+                    al_text = bwbXMLprocess.process_xml_text(item)
+                    if al_text is not None and al_text != "SKIP":
+                        bwbWriteGeneral.write_general(direc, bwbid, al_text)
 
 
 if __name__ == "__main__":
     dirlist = folder_lookup()
-    language_check(dirlist)
+    to_csv(dirlist)
     print("Code bwbWcopy executed")
