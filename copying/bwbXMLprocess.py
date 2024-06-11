@@ -67,8 +67,8 @@ def get_text(dlist):
                             if al_text and al_text != "SKIP":
                                 total_text += al_text + " "
                 else:
-                    bwbWriteGeneral.write_error("XMLProcess", "No Dutch verdrag in XML file: " + filename)
-                bwbWriteGeneral.write_general(output_dir, bwbid, total_text)
+                    writeGeneral.write_error("XMLProcess", "No Dutch verdrag in XML file: " + filename)
+                writeGeneral.write_general(output_dir, bwbid, total_text)
 
 
 def process_xml_text(item):
