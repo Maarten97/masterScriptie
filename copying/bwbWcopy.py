@@ -29,7 +29,7 @@ def to_csv(dlist):
                 for item in root.findall(".//al"):
                     al_text = bwbXMLprocess.process_xml_text(item)
                     if al_text is not None and al_text != "SKIP":
-                        bwbWriteGeneral.write_general(direc, bwbid, al_text)
+                        writeGeneral.write_general(direc, bwbid, al_text)
 
 
 if __name__ == "__main__":

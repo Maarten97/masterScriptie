@@ -1,6 +1,5 @@
 import os
 import xml.etree.ElementTree as ET
-from lxml import etree
 
 
 import bwbXMLprocess
@@ -43,9 +42,9 @@ def language_check(dlist):
                         for text_element in text_elements_in_verdrag:
                             al_text = bwbXMLprocess.process_xml_text(text_element)
                             if al_text is not None and al_text != "SKIP":
-                                bwbWriteGeneral.write_general(direc, bwbid, al_text)
+                                writeGeneral.write_general(direc, bwbid, al_text)
                 else:
-                    bwbWriteGeneral.write_error("bwbVcopy", "No Dutch verdrag in XML file: " + filename)
+                    writeGeneral.write_error("bwbVcopy", "No Dutch verdrag in XML file: " + filename)
 
 
 if __name__ == "__main__":
