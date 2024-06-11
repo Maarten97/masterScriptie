@@ -49,7 +49,7 @@ def get_text(dlist):
                         tree = ET.ElementTree(ET.fromstring(xml_content))
 
                 except (ET.ParseError, IOError) as e:
-                    bwbWriteGeneral.write_error("XMLProcess", f"Error parsing XML file {filename}: {e}")
+                    writeGeneral.write_error("XMLProcess", f"Error parsing XML file {filename}: {e}")
                     continue
 
                 root = tree.getroot()
