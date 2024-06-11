@@ -4,7 +4,7 @@ from lxml import etree
 
 
 import bwbXMLprocess
-import bwbWriteGeneral
+import writeGeneral
 
 # root_dir = 'D:/BWB/Origineel/202210_BWB_4'
 root_dir = 'C:/Users/looij/Documents/BWB/Output'

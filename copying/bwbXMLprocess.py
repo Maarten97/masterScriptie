@@ -1,6 +1,7 @@
 import os
+import re
 import xml.etree.ElementTree as ET
-import bwbWriteGeneral
+import writeGeneral
 
 invalid_stings = [
     "bevat overgangsrecht m.b.t. deze wijziging",
@@ -9,7 +10,7 @@ invalid_stings = [
     "De gegevens van inwerkingtreding zijn ontleend aan de bron van aankondiging van de tekstplaatsing",
     "De datum van inwerkingtreding is ontleend aan de bron van aankondiging van de tekstplaatsing",
     "Abusievelijk is een wijzigingsopdracht geformuleerd die niet geheel juist is",
-    "Vervalt behoudens voor zover het betreft de toepassing of overeenkomstige toepassing van deze artikelen "
+    "Vervalt behoudens voor zover het betreft de toepassing of overeenkomstige toepassing van deze artikelen"
 ]
 
 namespaces = {
@@ -82,6 +83,9 @@ def process_xml_text(item):
     # Remove all extra whitespaces at the beginning or the end of the String
     al_text = al_text.strip()
 
+    # Remove excessive numbers (more than 3 digits in a row)
+    al_text = re.sub(r'\d{4,}', '', al_text)
+
     # Remove multiple whitespaces
     al_text = ' '.join(al_text.split())
 
@@ -97,6 +101,9 @@ def process_xml_text(item):
     # Check if String is staring with '['
     if al_text.startswith('[') and al_text.endswith(']'):
         al_text = "SKIP"
+
+    # Remove special characters except common punctuation
+    al_text = re.sub(r'[!@#$%^&*()_+=\[\]{};:\\|<>/?~`]', '', al_text)
 
     # Check if String is invalid according to definition
     for i in invalid_stings:

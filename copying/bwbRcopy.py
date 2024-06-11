@@ -2,7 +2,7 @@ import os
 import xml.etree.ElementTree as ET
 
 import bwbXMLprocess
-import bwbWriteGeneral
+import writeGeneral
 
 root_dir = 'C:/Users/looij/Documents/BWB/Output'
 
