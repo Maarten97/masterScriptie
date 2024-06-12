@@ -46,14 +46,33 @@ def clean_text(fulltext):
         # Replace semicolons with commas
         line = line.replace(';', ',')
 
+        title_skipping = False
+        title_lowercase = False
         newline = []
         words = line.split()
         for word in words:
+
+            if title_skipping:
+                if word.count('.') > 1:
+                    continue
+                elif re.match(r"^[A-Za-z]\.", word):
+                    continue
+
+                elif title_lowercase:
+                    if word[0].isupper():
+                        title_lowercase = False
+                    continue
+                else:
+                    if word[0].isupper():
+                        continue
+
+
+
             # If word is fully written in capitals, convert to lower case
             if word.isupper():
                 word = word.lower()
-            if word == '-':
-                continue
+
+
             if len(word) == 1:
                 continue
 
@@ -66,8 +85,11 @@ def clean_text(fulltext):
                     word = '.'
                 else:
                     continue
+            title_pattern = r"(?:Mr\.|Mrs\.)"
+            if re.match(title_pattern, word, re.IGNORECASE):
+                title_skipping, title_lowercase = True, True
+                continue
 
-            if word == 'mr.' or word == 'mrs.':
                 #remove this word and next words
 
             # If word is two digits with one being a '.', remove
