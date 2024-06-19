@@ -7,6 +7,8 @@ output_dir = 'C:/Programming/Dataset/Test/testcsv.csv'
 def clean_text(fulltext):
     newtext = []
     lines = fulltext.split('\n')
+
+    # Remove heading of each Court Decision
     start = False
     for line in lines:
         if not line:
@@ -27,16 +29,16 @@ def clean_text(fulltext):
             else:
                 continue
 
-        end_of_line = False
-
         line = line.strip()
 
         # if line.endswith('.'):
         #     end_of_line = True
 
-        print(f'END: {end_of_line}, LINE: {line}')
+        print(f'LINE: {line}')
         # Here checks for sentences
 
+        # Remove words within square brackets
+        line = re.sub(r'\[.*?]', '', line)
         # Remove all parentheses, brackets, and other non-alphabetic/numeric characters except space and punctuation
         line = re.sub(r'[^\w\s,.:/;]', '', line)
         # Replace multiple whitespaces with a single whitespace
@@ -49,6 +51,7 @@ def clean_text(fulltext):
         title_skipping = False
         title_lowercase = False
         newline = []
+        line = line.strip()
         words = line.split()
         for word in words:
 
@@ -66,12 +69,9 @@ def clean_text(fulltext):
                     if word[0].isupper():
                         continue
 
-
-
             # If word is fully written in capitals, convert to lower case
             if word.isupper():
                 word = word.lower()
-
 
             if len(word) == 1:
                 continue
@@ -90,8 +90,7 @@ def clean_text(fulltext):
                 title_skipping, title_lowercase = True, True
                 continue
 
-                #remove this word and next words
-
+            #remove this word and next words
             # If word is two digits with one being a '.', remove
             # if re.match(r'^\d\.\d$', word):
             #     continue
@@ -104,13 +103,17 @@ def clean_text(fulltext):
                 newline.append(word)
 
         print(f'NEWLINE: {newline}')
+
         # Add the cleaned line to the new text if it's not empty
         if newline:
-            if end_of_line:
-                newtext.append('. '.join(newline))
-            else:
-                newtext.append(' '.join(newline))
-    return ' '.join(newtext)
+            newtext.append(' '.join(newline))
+    # Join all sentences together
+    returnline = ' '.join(newtext)
+
+    # Remove double points and comma's.
+    returnline = re.sub(r'\.+', '.', returnline)
+    returnline = re.sub(r',+', ',', returnline)
+    return returnline
 
 
 def open_text(path):
