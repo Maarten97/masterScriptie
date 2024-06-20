@@ -1,7 +1,7 @@
-import csv, re, os
+import csv, re, os, sys
 
 input_dir = 'C:/Programming/Dataset/Test'
-output_dir = 'C:/Programming/Dataset/Test/testcsv.csv'
+output_dir = 'C:/Programming/Dataset/TestOut/rechtspraak.csv'
 
 
 def clean_text(fulltext):
@@ -97,7 +97,7 @@ def clean_text(fulltext):
             # Remove the ' [] ' at the beginning and ending of every word
             if word.startswith('[') and word.endswith(']'):
                 word = word[1:-1]
-            if word == '.':
+            if word == '.' and newline:
                 newline[-1] += "."
             else:
                 newline.append(word)
@@ -116,22 +116,32 @@ def clean_text(fulltext):
     return returnline
 
 
-def open_text(path):
-    with (open(input_dir, mode='r', encoding='utf-8') as csvinput, open(output_dir, mode='w',
-                                                                        encoding='utf-8') as outfile):
-        reader = csv.DictReader(csvinput)
-        fieldnames = reader.fieldnames
-        writer = csv.DictWriter(outfile, fieldnames=fieldnames)
-        writer.writeheader()
+def open_text():
+    csv.field_size_limit(10**9)
+    header = False
+    fieldnames = ["id", "text"]
+    with open(output_dir, mode='w', encoding='utf-8') as outfile:
 
-        for row in reader:
-            court_text = row['text']
-            court_text = clean_text(court_text)
-            writer.writerow({'id': row['id'], 'text': court_text})
+        for csvfile in os.listdir(input_dir):
+            if csvfile.endswith('.csv'):
+                newdir = os.path.join(input_dir, csvfile)
+
+                with open(newdir, mode='r', encoding='utf-8') as csvinput:
+                    reader = csv.DictReader(csvinput, quotechar='"', delimiter=';')
+                    writer = csv.DictWriter(outfile, fieldnames=fieldnames, quotechar='"', delimiter=';')
+                    if not header:
+                        writer.writeheader()
+                        header = True
+
+                    for row in reader:
+                        court_text = row['text']
+                        if court_text:
+                            court_text = clean_text(court_text)
+                        writer.writerow({'id': row['id'], 'text': court_text})
 
 
-def test_text(path):
-    with (open(path, mode='r', encoding='utf-8') as csvinput):
+def test_text():
+    with (open(input_dir, mode='r', encoding='utf-8') as csvinput):
         reader = csv.DictReader(csvinput)
         for row in reader:
             court_text = row['full_text']
@@ -141,9 +151,5 @@ def test_text(path):
 
 
 if __name__ == '__main__':
-    for csvfile in os.listdir(input_dir):
-        newdir = os.path.join(input_dir, csvfile)
-        print(newdir)
-        if os.path.exists(newdir):
-            # open_text(input_dir)
-            test_text(newdir)
+    open_text()
+    # test_text()
