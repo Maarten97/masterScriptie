@@ -1,7 +1,7 @@
 import csv, re, os, sys
 
 input_dir = 'C:/Programming/Dataset/Test'
-output_dir = 'C:/Programming/Dataset/TestOut/rechtspraak.csv'
+output_dir = 'C:/Programming/Dataset/TestOut/rechtspraaktst.csv'
 
 
 def clean_text(fulltext):
@@ -9,15 +9,15 @@ def clean_text(fulltext):
     lines = fulltext.split('\n')
 
     # Remove heading of each Court Decision
-    start = False
+    # start = False
     for line in lines:
-        if not line:
-            continue
-        if not start:
-            if line.startswith('1'):
-                start = True
-            else:
-                continue
+    #     if not line:
+    #         continue
+    #     if not start:
+    #         if line.startswith('1'):
+    #             start = True
+    #         else:
+    #             continue
 
         # Verwijder hoofdstuknummering
         if line[0].isdigit():
@@ -34,7 +34,6 @@ def clean_text(fulltext):
         # if line.endswith('.'):
         #     end_of_line = True
 
-        print(f'LINE: {line}')
         # Here checks for sentences
 
         # Remove words within square brackets
@@ -102,8 +101,6 @@ def clean_text(fulltext):
             else:
                 newline.append(word)
 
-        print(f'NEWLINE: {newline}')
-
         # Add the cleaned line to the new text if it's not empty
         if newline:
             newtext.append(' '.join(newline))
@@ -120,7 +117,7 @@ def open_text():
     csv.field_size_limit(10**9)
     header = False
     fieldnames = ["id", "text"]
-    with open(output_dir, mode='w', encoding='utf-8') as outfile:
+    with open(output_dir, mode='w', encoding='utf-8', newline='') as outfile:
 
         for csvfile in os.listdir(input_dir):
             if csvfile.endswith('.csv'):
@@ -137,19 +134,23 @@ def open_text():
                         court_text = row['text']
                         if court_text:
                             court_text = clean_text(court_text)
-                        writer.writerow({'id': row['id'], 'text': court_text})
+                            writer.writerow({'id': row['id'], 'text': court_text})
+                        else:
+                            print(row[0:20])
 
 
 def test_text():
     with (open(input_dir, mode='r', encoding='utf-8') as csvinput):
-        reader = csv.DictReader(csvinput)
+        reader = csv.DictReader(csvinput, quotechar='"', delimiter=';')
         for row in reader:
             court_text = row['full_text']
             if court_text:
                 court_text = clean_text(court_text)
-            print(f'id: {row['ecli']}, court_text: {court_text}')
+                # print(f'id: {row['ecli']}, court_text: {court_text}')
+            else:
+                print(row[0:20])
 
 
 if __name__ == '__main__':
-    open_text()
-    # test_text()
+    # open_text()
+    test_text()
