@@ -11,8 +11,8 @@ def clean_text(fulltext):
     # Remove heading of each Court Decision
     # start = False
     for line in lines:
-    #     if not line:
-    #         continue
+        if not line:
+            continue
     #     if not start:
     #         if line.startswith('1'):
     #             start = True
@@ -54,6 +54,7 @@ def clean_text(fulltext):
         words = line.split()
         for word in words:
 
+            # Delete all mr.
             if title_skipping:
                 if word.count('.') > 1:
                     continue
@@ -73,6 +74,12 @@ def clean_text(fulltext):
                 word = word.lower()
 
             if len(word) == 1:
+                continue
+
+            if 'b.v.' in word.lower() or 'n.v.' in word.lower() or 'c.s.' in word.lower() or 'v.o.f.' in word.lower():
+                continue
+
+            if word == ',.':
                 continue
 
             # If word does not contain normal characters or numbers with commas, remove it
@@ -107,17 +114,40 @@ def clean_text(fulltext):
     # Join all sentences together
     returnline = ' '.join(newtext)
 
-    # Remove double points and comma's.
+    # Remove multiple points and comma's.
     returnline = re.sub(r'\.+', '.', returnline)
     returnline = re.sub(r',+', ',', returnline)
+
+    #If starts with space, remove space
+    if returnline[0] == ' ':
+        returnline = returnline[1:]
+    #Find the first dot and remove everything in front of it.
+
+    dot_index = returnline.find('.')
+    if dot_index != -1:
+        returnline = returnline[dot_index+1:]
+
+    if returnline.startswith('Datum uitspraak'):
+        dot_index = returnline.find('.')
+        if dot_index != -1:
+            returnline = returnline[dot_index + 1:]
+
+    if returnline.startswith('Partijen'):
+        dot_index = returnline.find('.')
+        if dot_index != -1:
+            returnline = returnline[dot_index + 1:]
+
+    #Remove first sentence / header of article.
+
     return returnline
 
 
 def open_text():
     csv.field_size_limit(10**9)
-    header = False
     fieldnames = ["id", "text"]
     with open(output_dir, mode='w', encoding='utf-8', newline='') as outfile:
+        writer = csv.DictWriter(outfile, fieldnames=fieldnames, quotechar='"', delimiter=';')
+        writer.writeheader()
 
         for csvfile in os.listdir(input_dir):
             if csvfile.endswith('.csv'):
@@ -125,10 +155,6 @@ def open_text():
 
                 with open(newdir, mode='r', encoding='utf-8') as csvinput:
                     reader = csv.DictReader(csvinput, quotechar='"', delimiter=';')
-                    writer = csv.DictWriter(outfile, fieldnames=fieldnames, quotechar='"', delimiter=';')
-                    if not header:
-                        writer.writeheader()
-                        header = True
 
                     for row in reader:
                         court_text = row['text']
@@ -140,17 +166,21 @@ def open_text():
 
 
 def test_text():
-    with (open(input_dir, mode='r', encoding='utf-8') as csvinput):
-        reader = csv.DictReader(csvinput, quotechar='"', delimiter=';')
-        for row in reader:
-            court_text = row['full_text']
-            if court_text:
-                court_text = clean_text(court_text)
-                # print(f'id: {row['ecli']}, court_text: {court_text}')
-            else:
-                print(row[0:20])
+    csv.field_size_limit(10**9)
+    for csvfile in os.listdir(input_dir):
+        if csvfile.endswith('.csv'):
+            newdir = os.path.join(input_dir, csvfile)
+            with (open(newdir, mode='r', encoding='utf-8') as csvinput):
+                reader = csv.DictReader(csvinput, quotechar='"', delimiter=';')
+                for row in reader:
+                    court_text = row['text']
+                    if court_text:
+                        court_text = clean_text(court_text)
+                        print(f'id: {row['id']}, court_text: {court_text}')
+                    else:
+                        print(row[0:20])
 
 
 if __name__ == '__main__':
-    # open_text()
-    test_text()
+    open_text()
+    # test_text()
