@@ -119,7 +119,7 @@ def clean_text(fulltext):
     returnline = re.sub(r',+', ',', returnline)
 
     #If starts with space, remove space
-    if returnline[0] == ' ':
+    if returnline and returnline[0] == ' ':
         returnline = returnline[1:]
     #Find the first dot and remove everything in front of it.
 
@@ -152,6 +152,7 @@ def open_text():
         for csvfile in os.listdir(input_dir):
             if csvfile.endswith('.csv'):
                 newdir = os.path.join(input_dir, csvfile)
+                print(f'Now processing {newdir}')
 
                 with open(newdir, mode='r', encoding='utf-8') as csvinput:
                     reader = csv.DictReader(csvinput, quotechar='"', delimiter=';')
