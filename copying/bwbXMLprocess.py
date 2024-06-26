@@ -19,8 +19,8 @@ namespaces = {
 }
 
 
-root_dir = 'C:/Users/looij/Documents/BWB/Subset3'
-output_dir = 'C:/Users/looij/Documents/BWB/OutputTest/XMLProcess2.csv'
+root_dir = 'D:/BWB/subsetx'
+output_dir = 'D:/BWB/Proces/test.csv'
 
 
 def folder_lookup():
@@ -83,14 +83,14 @@ def process_xml_text(item):
     # Remove all extra whitespaces at the beginning or the end of the String
     al_text = al_text.strip()
 
-    # Remove excessive numbers (more than 3 digits in a row)
-    al_text = re.sub(r'\d{4,}', '', al_text)
-
     # Remove multiple whitespaces
     al_text = ' '.join(al_text.split())
 
     # Replace semicolons with dots
     al_text = al_text.replace(';', '.')
+    al_text = al_text.replace(':', '.')
+    al_text = al_text.replace('!', '.')
+    al_text = al_text.replace('"', '')
 
     # Remove the ' " ' at the beginning or ending of every String
     if al_text.startswith('"'):
@@ -103,16 +103,43 @@ def process_xml_text(item):
         al_text = "SKIP"
 
     # Remove special characters except common punctuation
-    al_text = re.sub(r'[!@#$%^&*()_+=\[\]{};:\\|<>/?~`]', '', al_text)
+    al_text = re.sub(r'[!‘"@#$%^&*()_+=\[\]{};:\\|<>/?~`]', '', al_text)
 
     # Check if String is invalid according to definition
     for i in invalid_stings:
         if i in al_text:
             al_text = "SKIP"
 
-    if al_text == "Vervallen" or al_text == "Vervallen.":
+    if al_text == "Vervallen" or al_text == "Vervallen." or al_text == "Besluit." or al_text == "Besluiten.":
         al_text = "SKIP"
 
+    if al_text != "SKIP":
+        newline = []
+        words = al_text.split()
+        for word in words:
+            if word.isupper():
+                word = word.lower()
+            if len(word) == 1:
+                continue
+            if word == ',.':
+                continue
+            if len(re.findall(r'\d', word)) > 2:
+                if word.endswith('.'):
+                    word = '.'
+                else:
+                    continue
+            if 'art.' in word.lower() or 'nr.' in word.lower():
+                continue
+            if word.startswith("'"):
+                if not (len(word) > 2 and word[1] == "s"):
+                    word = word[1:]
+            if word.endswith("'"):
+                word = word[:-1]
+            if word == '.' and newline:
+                newline[-1] += "."
+            else:
+                newline.append(word)
+        al_text = ' '.join(newline)
     return al_text
 
 
