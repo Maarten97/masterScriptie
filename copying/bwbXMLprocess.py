@@ -19,8 +19,8 @@ namespaces = {
 }
 
 
-root_dir = 'D:/BWB/subsetx'
-output_dir = 'D:/BWB/Proces/test.csv'
+root_dir = 'C:/Users/looijengam/Documents/Output/Output/VersionControl'
+output_dir = 'C:/Users/looijengam/Documents/Output/dataset.csv'
 
 
 def folder_lookup():
