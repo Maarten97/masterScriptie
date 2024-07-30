@@ -1,7 +1,7 @@
 import csv
 import re
 
-input_dir = 'data.csv'
+input_dir = 'C:/Users/looijengam/Documents/DatasetFinal/random.csv'
 output_dir = 'output.txt'
 
 

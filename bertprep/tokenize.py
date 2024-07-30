@@ -7,7 +7,22 @@ import torch
 tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
 model = BertForMaskedLM.from_pretrained('bert-base-cased')
 
-text_dir = 'dataset.txt'
+text_dir = 'output.txt'
+
+
+class RechtDataset(torch.utils.data.Dataset):
+    def __init__(self, encodings):
+        self.encodings = encodings
+
+    def __getitem__(self, idx):
+        return {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
+
+    def __len__(self):
+        return len(self.encodings.input_ids)
+
+
+
+
 with open(text_dir, 'r') as fp:
     text = fp.read().split('\n')
 
@@ -24,7 +39,7 @@ rand = torch.rand(inputs.input_ids.shape)
 mask_arr = (rand < 0.15) * (inputs.input_ids != 101) * \
            (inputs.input_ids != 102) * (inputs.input_ids != 0)
 
-# And now we take take the indices of each True value, within each individual vector.
+# And now we take the indices of each True value, within each individual vector.
 selection = []
 
 for i in range(inputs.input_ids.shape[0]):
@@ -40,13 +55,8 @@ for i in range(inputs.input_ids.shape[0]):
 # The inputs tensors are now ready, and can we can begin setting them up to be fed into our model during training.
 # We create a PyTorch dataset from our data.
 
-class RechtDataset(torch.utils.data.Dataset):
-    def __init__(self, encodings):
-        self.encodings = encodings
-    def __getitem__(self, idx):
-        return {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
-    def __len__(self):
-        return len(self.encodings.input_ids)
+
+
 
 
 dataset = RechtDataset(inputs)
@@ -89,3 +99,6 @@ for epoch in range(epochs):
         # print relevant info to progress bar
         loop.set_description(f'Epoch {epoch}')
         loop.set_postfix(loss=loss.item())
+
+model.save_pretrained('./bert-mlm-model')
+tokenizer.save_pretrained('./bert-mlm-model')
