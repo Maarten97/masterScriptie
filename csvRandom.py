@@ -16,12 +16,12 @@ def read_random_rows(filename, num_rows):
 
 
 # Create a new CSV file with columns 'id' and 'text'
-with open(newdir, 'w', newline='') as new_file:
+with open(newdir, 'w', newline='', encoding="UTF-8") as new_file:
     fieldnames = ['id', 'text']
     writer = csv.DictWriter(new_file, fieldnames=fieldnames, delimiter=';', quoting=csv.QUOTE_ALL)
     writer.writeheader()
 
-    # Read and write 10 random rows from rech.csv
+    # Read and write 10 random rows from rechtspraak.csv
     rech_rows = read_random_rows(filetwo, 10)
     for row in rech_rows:
         writer.writerow({'id': row['id'], 'text': row['text']})
