@@ -18,12 +18,7 @@ namespaces = {
     "xsi": "http://www.w3.org/2001/XMLSchema-instance"
 }
 
-
-root_dir = 'C:/Users/looijengam/Documents/Output/Output/VersionControl'
-output_dir = 'C:/Users/looijengam/Documents/Output/dataset.csv'
-
-
-def folder_lookup():
+def folder_lookup(root_dir):
     dirlista = []
     for bwbid in os.listdir(root_dir):
         if bwbid.startswith('BWBV') or bwbid.startswith('BWBR') or bwbid.startswith('BWBW'):
@@ -32,7 +27,7 @@ def folder_lookup():
     return dirlista
 
 
-def get_text(dlist):
+def get_text(dlist, output_dir):
     for direc in dlist:
         for filename in os.listdir(direc):
 
@@ -142,9 +137,17 @@ def process_xml_text(item):
         al_text = ' '.join(newline)
     return al_text
 
+# Method to call from outside class
+def main(rootdir, outputdir):
+    dirlists = folder_lookup(root_dir=rootdir)
+    get_text(dirlists, output_dir=outputdir)
+
 
 if __name__ == '__main__':
-    dirlist = folder_lookup()
-    get_text(dirlist)
+    root = 'C:/Users/looijengam/Documents/Output/Output/VersionControl'
+    output = 'C:/Users/looijengam/Documents/Output/dataset.csv'
+
+    dirlist = folder_lookup(root_dir=root)
+    get_text(dirlist, output_dir=output)
     print("Code XMLProcess executed")
 

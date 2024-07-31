@@ -2,12 +2,9 @@ import datetime
 import os
 import shutil
 
-root_dir = 'C:/Users/looij/Documents/BWB/Subset2'
-output_dir = 'C:/Users/looij/Documents/BWB/Output'
-root_folder = ['202210_BWB_1', '202210_BWB_2', '202210_BWB_3', '202210_BWB_4']
 
-
-def folder_lookup():
+def folder_lookup(root_dir, output_dir):
+    root_folder = ['202210_BWB_1', '202210_BWB_2', '202210_BWB_3', '202210_BWB_4']
     for folder in root_folder:
         input_path = os.path.join(root_dir, folder)
         for bwbid in os.listdir(input_path):
@@ -73,5 +70,7 @@ def write_to_txt(text):
 
 # INITIAL
 if __name__ == "__main__":
-    folder_lookup()
+    root = 'C:/Users/looij/Documents/BWB/Subset2'
+    output = 'C:/Users/looij/Documents/BWB/Output'
+    folder_lookup(root, output)
     print("Code versionControl executed")

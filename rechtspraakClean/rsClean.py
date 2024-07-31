@@ -1,8 +1,5 @@
 import csv, re, os, sys
 
-input_dir = 'C:/Programming/Dataset/Test'
-output_dir = 'C:/Programming/Dataset/TestOut/rechtspraaktst.csv'
-
 
 def clean_text(fulltext):
     newtext = []
@@ -142,7 +139,7 @@ def clean_text(fulltext):
     return returnline
 
 
-def open_text():
+def open_text(input_dir, output_dir):
     csv.field_size_limit(10**9)
     fieldnames = ["id", "text"]
     with open(output_dir, mode='w', encoding='utf-8', newline='') as outfile:
@@ -166,7 +163,7 @@ def open_text():
                             print(row[0:20])
 
 
-def test_text():
+def test_text(input_dir):
     csv.field_size_limit(10**9)
     for csvfile in os.listdir(input_dir):
         if csvfile.endswith('.csv'):
@@ -182,6 +179,12 @@ def test_text():
                         print(row[0:20])
 
 
+def main(inputdr, output):
+    open_text(inputdr, output)
+    # test_text(inputdr)
+
+
 if __name__ == '__main__':
-    open_text()
-    # test_text()
+    input_dir = 'C:/Programming/Dataset/Test'
+    output_dir = 'C:/Programming/Dataset/TestOut/rechtspraaktst.csv'
+    main(input_dir, output_dir)

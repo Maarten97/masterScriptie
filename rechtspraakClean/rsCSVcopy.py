@@ -2,11 +2,8 @@ import os
 import pandas as pd
 import writeGeneral
 
-directory = 'C:/Programming/Dataset/Rechtspraak'
-out_dir = 'C:/Programming/Dataset/RechtspraakOutput'
 
-
-def process_csv(dirpath):
+def process_csv(dirpath, out_dir):
     for folder in os.listdir(dirpath):
         for filename in os.listdir(os.path.join(dirpath, folder)):
             if filename.endswith('metadata.csv'):
@@ -19,5 +16,11 @@ def process_csv(dirpath):
                     writeGeneral.write_general(writedir, str(row['ecli']), row['full_text'])
 
 
+def main(dirs, out):
+    process_csv(dirs, out)
+
+
 if __name__ == '__main__':
-    process_csv(directory)
+    directory = 'C:/Programming/Dataset/Rechtspraak'
+    out_dir = 'C:/Programming/Dataset/RechtspraakOutput'
+    process_csv(directory, out_dir)

@@ -10,13 +10,13 @@ def merge_csv(inputdirs, tempdir):
         writer = csv.DictWriter(outfile, fieldnames=fieldnames, quotechar='"', delimiter=';')
         writer.writeheader()
         for inputdir in inputdirs:
-            for csvfile in os.listdir(inputdir):
-                if csvfile.endswith('.csv'):
-                    newdir = os.path.join(input_dir, csvfile)
-                    with open(newdir, mode='r', encoding='utf-8') as csvinput:
-                        reader = csv.DictReader(csvinput, quotechar='"', delimiter=';')
-                        for row in reader:
-                            writer.writerow({'id': row['id'], 'text': row['text']})
+            if inputdir.endswith('.csv'):
+                with open(inputdir, mode='r', encoding='utf-8') as csvinput:
+                    reader = csv.DictReader(csvinput, quotechar='"', delimiter=';')
+                    for row in reader:
+                        writer.writerow({'id': row['id'], 'text': row['text']})
+            else:
+                raise TypeError("Input type not supported, non .csv file")
 
 
 def split_into_sentences(text):
@@ -41,9 +41,9 @@ def process_csv_to_txt(input_dir, output_dir):
 def main(inputs, outputs, tempdir):
     if isinstance(inputs, list):
         merge_csv(inputs, tempdir)
-        process_csv_to_txt(tempdir, outputs)
+        process_csv_to_txt(input_dir=tempdir, output_dir=outputs)
     elif isinstance(inputs, str):
-        process_csv_to_txt(inputs, outputs)
+        process_csv_to_txt(input_dir=inputs, output_dir=outputs)
     else:
         raise TypeError("Inputs should be a string or a list of strings.")
 
@@ -52,4 +52,5 @@ def main(inputs, outputs, tempdir):
 if __name__ == '__main__':
     input_dir = 'C:/Users/looijengam/Documents/DatasetFinal/random.csv'
     output_dir = 'output.txt'
-    process_csv_to_txt(input_dir, output_dir)
+    main(inputs=input_dir, outputs=output_dir, tempdir=None)
+
