@@ -73,7 +73,7 @@ def clean_text(fulltext):
             if len(word) == 1:
                 continue
 
-            if 'b.v.' in word.lower() or 'n.v.' in word.lower() or 'c.s.' in word.lower() or 'v.o.f.' in word.lower():
+            if re.search(r'\b(b\.v\.|n\.v\.|c\.s\.|v\.o\.f\.)\b', word, re.IGNORECASE):
                 continue
 
             if word == ',.':
@@ -88,15 +88,22 @@ def clean_text(fulltext):
                     word = '.'
                 else:
                     continue
-            title_pattern = r"(?:Mr\.|Mrs\.)"
+            title_pattern = r'\b(Mr\.|Mrs\.|Dr\.|Drs\.)'
             if re.match(title_pattern, word, re.IGNORECASE):
                 title_skipping, title_lowercase = True, True
                 continue
 
-            #remove this word and next words
-            # If word is two digits with one being a '.', remove
-            # if re.match(r'^\d\.\d$', word):
-            #     continue
+            if word == 'art.':
+                word = 'artikel'
+            if word == 'nr.':
+                word = 'nummer'
+            if word == 'p.':
+                word = 'paragraaf'
+            if word == 'd.d.':
+                word = 'de dato'
+
+
+
             # Remove the ' [] ' at the beginning and ending of every word
             if word.startswith('[') and word.endswith(']'):
                 word = word[1:-1]
@@ -104,6 +111,8 @@ def clean_text(fulltext):
                 newline[-1] += "."
             else:
                 newline.append(word)
+
+
 
         # Add the cleaned line to the new text if it's not empty
         if newline:
@@ -158,9 +167,12 @@ def open_text(input_dir, output_dir):
                         court_text = row['text']
                         if court_text:
                             court_text = clean_text(court_text)
-                            writer.writerow({'id': row['id'], 'text': court_text})
+                            if len(court_text) == 0:
+                                print(f'No court text cleaned for {row['id']}')
+                            else:
+                                writer.writerow({'id': row['id'], 'text': court_text})
                         else:
-                            print(row[0:20])
+                            print(f'No court text found for {row['id']}')
 
 
 def test_text(input_dir):
