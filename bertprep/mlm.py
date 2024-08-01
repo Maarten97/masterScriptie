@@ -74,7 +74,7 @@ def main():
     inputs = tokenizer(text, return_tensors='pt', max_length=512, truncation=True, padding='max_length')
     inputs = create_mlm_labels(inputs)
     dataset = RechtDataset(inputs)
-    loader = torch.utils.data.DataLoader(dataset, batch_size=16, shuffle=True)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=True)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     train_model(model, loader, device, epochs=2, lr=5e-5)
     model.save_pretrained('./bert-mlm-model')

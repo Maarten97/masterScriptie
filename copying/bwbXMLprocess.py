@@ -32,7 +32,7 @@ def get_text(dlist, output_dir):
         for filename in os.listdir(direc):
 
             if filename.endswith(".xml") and "manifest" not in filename:
-                print("Currently loading XML file: " + filename)
+                # print("Currently loading XML file: " + filename)
                 filepath = os.path.join(direc, filename)
                 bwbid = os.path.basename(direc)
 

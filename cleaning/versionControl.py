@@ -59,7 +59,7 @@ def copy_xml(input_path, output_path):
 
 
 def write_to_txt(text):
-    error_dir = '../Data/logfile/versionControl.txt'
+    error_dir = 'C:/Users/looijengam/PycharmProjects/masterScriptie/cleaning/logfile/versionControl.txt'
     if not os.path.exists(error_dir):
         with open(error_dir, "w") as txtfile:
             txtfile.write(text + "\n")

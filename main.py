@@ -4,7 +4,8 @@ import rsClean
 import versionControl
 from bertprep import csvToTxt
 
-dir_input_bwb = 'C:/Users/looijengam/Documents/Final/inputbwb'
+dir_input_bwb = 'D:/BWB/Origineel'
+dir_temp_bwb = 'C:/Users/looijengam/Documents/Final/inputbwb/full'
 dir_input_recht = 'C:/Users/looijengam/Documents/Final/inputrecht'
 dir_output_bwb = 'C:/Users/looijengam/Documents/Final/bwb.csv'
 dir_output_recht = 'C:/Users/looijengam/Documents/Final/recht.csv'
@@ -14,10 +15,9 @@ dir_output_combine = 'C:/Users/looijengam/Documents/Final/dataset.csv'
 
 def create_bwb_csv():
     # Copy all files to one folder
-    output_temp = dir_input_bwb + "/full"
-    versionControl.folder_lookup(root_dir=dir_input_bwb,output_dir=output_temp)
+    versionControl.folder_lookup(root_dir=dir_input_bwb,output_dir=dir_temp_bwb)
     # Cleaning data and writing to CSV
-    bwbXMLprocess.main(rootdir=output_temp, outputdir=dir_output_bwb)
+    bwbXMLprocess.main(rootdir=dir_temp_bwb, outputdir=dir_output_bwb)
 
 
 def create_recht_csv():
@@ -34,4 +34,6 @@ def combine_to_txt():
 
 
 if __name__ == "__main__":
-    create_bwb_csv()
+    # create_bwb_csv()
+    create_recht_csv()
+    combine_to_txt()
