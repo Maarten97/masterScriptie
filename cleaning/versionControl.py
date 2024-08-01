@@ -55,7 +55,7 @@ def copy_xml(input_path, output_path):
                 source_path = os.path.join(root, filename)
                 destination_path = os.path.join(output_path, filename)
                 shutil.copy2(source_path, destination_path)
-                print(f"Copied {source_path} to {destination_path}")
+                # print(f"Copied {source_path} to {destination_path}")
 
 
 def write_to_txt(text):
