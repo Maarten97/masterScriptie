@@ -1,7 +1,7 @@
-import bwbXMLprocess
-import rsCSVcopy
-import rsClean
-import versionControl
+from copying import bwbXMLprocess
+from rechtspraakClean import rsCSVcopy
+from rechtspraakClean import rsClean
+from cleaning import versionControl
 from bertprep import csvToTxt
 
 dir_input_bwb = 'D:/BWB/Origineel'
