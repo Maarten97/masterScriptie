@@ -2,8 +2,8 @@ import os
 import csv
 
 root_dir = 'M:/BWB/Origineel'
-output_dir = 'M:/BWB/Output/Extention/ExtentionCleaned.csv'
-okay_extensions = ['.xml', '.xsd', '.wti']
+output_dir = 'M:/BWB/Output/Extention/ExtentionCleanedAll.csv'
+okay_extensions = []
 
 
 def lookup():

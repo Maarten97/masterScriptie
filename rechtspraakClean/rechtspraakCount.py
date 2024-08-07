@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-directory_path = 'C:/Programming/Dataset/Rechtspraak'
+directory_path = 'M:/BIT/Rechtspraak'
 
 
 def count_rows_in_metadata_files(directory):
