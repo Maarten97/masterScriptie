@@ -4,7 +4,7 @@ from tqdm import tqdm
 from transformers import BertTokenizer, BertForMaskedLM, AdamW
 
 # Set the path to the text file
-text_dir = 'output.txt'
+text_dir = 'M:/BIT/datasetRandom.txt'
 
 # Initialize the tokenizer and model
 tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
@@ -76,6 +76,7 @@ def main():
     dataset = RechtDataset(inputs)
     loader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=True)
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    print("torch.device('cuda')") if torch.cuda.is_available() else print("torch.device('cpu')")
     train_model(model, loader, device, epochs=2, lr=5e-5)
     model.save_pretrained('./bert-mlm-model')
     tokenizer.save_pretrained('./bert-mlm-model')

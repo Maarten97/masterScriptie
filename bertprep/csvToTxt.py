@@ -3,6 +3,8 @@ import os
 import re
 
 
+# Code to check the mega full txt file. With great inspiration from the World Wide Web.
+
 def merge_csv(inputdirs, tempdir):
     csv.field_size_limit(10**9)
     fieldnames = ["id", "text"]
