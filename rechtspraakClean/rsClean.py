@@ -1,20 +1,16 @@
-import csv, re, os, sys
+import csv
+import os
+import re
 
 
 def clean_text(fulltext):
     newtext = []
     lines = fulltext.split('\n')
 
-    # Remove heading of each Court Decision
-    # start = False
+    # If line is empty, it is skipped
     for line in lines:
         if not line:
             continue
-    #     if not start:
-    #         if line.startswith('1'):
-    #             start = True
-    #         else:
-    #             continue
 
         # Verwijder hoofdstuknummering
         if line[0].isdigit():
@@ -26,12 +22,8 @@ def clean_text(fulltext):
             else:
                 continue
 
+        # Removes any whitespaces at beginning or end of line
         line = line.strip()
-
-        # if line.endswith('.'):
-        #     end_of_line = True
-
-        # Here checks for sentences
 
         # Remove words within square brackets
         line = re.sub(r'\[.*?]', '', line)
@@ -73,15 +65,12 @@ def clean_text(fulltext):
             if len(word) == 1:
                 continue
 
-            if re.search(r'\b(b\.v\.|n\.v\.|c\.s\.|v\.o\.f\.)\b', word, re.IGNORECASE):
+            if re.search(r'\b(b\.v\.|n\.v\.|c\.s\.|v\.o\.f\.)\b,', word, re.IGNORECASE):
                 continue
 
             if word == ',.':
                 continue
 
-            # If word does not contain normal characters or numbers with commas, remove it
-            # if not re.match(r'^[a-zA-Z0-9,]+$', word):
-            #     continue
             # If word contains more than 3 numbers, remove the word
             if len(re.findall(r'\d', word)) > 3:
                 if word.endswith('.'):
@@ -102,7 +91,9 @@ def clean_text(fulltext):
             if word == 'd.d.':
                 word = 'de dato'
 
-
+            # If word contains more than one dot, skip the word.
+            if word.count('.') > 1:
+                continue
 
             # Remove the ' [] ' at the beginning and ending of every word
             if word.startswith('[') and word.endswith(']'):
@@ -112,10 +103,8 @@ def clean_text(fulltext):
             else:
                 newline.append(word)
 
-
-
         # Add the cleaned line to the new text if it's not empty
-        if newline:
+        if newline and len(newline) > 1:
             newtext.append(' '.join(newline))
     # Join all sentences together
     returnline = ' '.join(newtext)
@@ -124,14 +113,14 @@ def clean_text(fulltext):
     returnline = re.sub(r'\.+', '.', returnline)
     returnline = re.sub(r',+', ',', returnline)
 
-    #If starts with space, remove space
+    # If starts with space, remove space
     if returnline and returnline[0] == ' ':
         returnline = returnline[1:]
-    #Find the first dot and remove everything in front of it.
+    # Find the first dot and remove everything in front of it.
 
     dot_index = returnline.find('.')
     if dot_index != -1:
-        returnline = returnline[dot_index+1:]
+        returnline = returnline[dot_index + 1:]
 
     if returnline.startswith('Datum uitspraak'):
         dot_index = returnline.find('.')
@@ -143,13 +132,11 @@ def clean_text(fulltext):
         if dot_index != -1:
             returnline = returnline[dot_index + 1:]
 
-    #Remove first sentence / header of article.
-
     return returnline
 
 
 def open_text(input_dir, output_dir):
-    csv.field_size_limit(10**9)
+    csv.field_size_limit(10 ** 9)
     fieldnames = ["id", "text"]
     with open(output_dir, mode='w', encoding='utf-8', newline='') as outfile:
         writer = csv.DictWriter(outfile, fieldnames=fieldnames, quotechar='"', delimiter=';')
@@ -176,7 +163,7 @@ def open_text(input_dir, output_dir):
 
 
 def test_text(input_dir):
-    csv.field_size_limit(10**9)
+    csv.field_size_limit(10 ** 9)
     for csvfile in os.listdir(input_dir):
         if csvfile.endswith('.csv'):
             newdir = os.path.join(input_dir, csvfile)
