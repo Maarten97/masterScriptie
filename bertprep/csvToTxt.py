@@ -36,8 +36,11 @@ def process_csv_to_txt(input_dir, output_dir):
                     text = row['text']
                     sentences = split_into_sentences(text)
                     for sentence in sentences:
-                        txt_file.write(sentence + '\n')
-                    txt_file.write('\n')  # Add white lines between entries
+                        check = sentence.strip().split()
+                        if len(check) > 1:
+                            txt_file.write(sentence + '\n')
+                    if txt_file:
+                        txt_file.write('\n')  # Add white lines between entries
 
 
 def main(inputs, outputs, tempdir):
