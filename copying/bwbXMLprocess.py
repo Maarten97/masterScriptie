@@ -10,7 +10,8 @@ invalid_stings = [
     "De gegevens van inwerkingtreding zijn ontleend aan de bron van aankondiging van de tekstplaatsing",
     "De datum van inwerkingtreding is ontleend aan de bron van aankondiging van de tekstplaatsing",
     "Abusievelijk is een wijzigingsopdracht geformuleerd die niet geheel juist is",
-    "Vervalt behoudens voor zover het betreft de toepassing of overeenkomstige toepassing van deze artikelen"
+    "Vervalt behoudens voor zover het betreft de toepassing of overeenkomstige toepassing van deze artikelen",
+    "Treedt uitsluitend in werking voor zover het betreft vorderingsprocedures"
 ]
 
 namespaces = {
