@@ -15,7 +15,7 @@ dir_output_combine = 'M:/BIT/dataset.csv'
 
 def create_bwb_csv():
     print('Copy all BWB files to one folder')
-    versionControl.folder_lookup(root_dir=dir_input_bwb, output_dir=dir_temp_bwb)
+    # versionControl.folder_lookup(root_dir=dir_input_bwb, output_dir=dir_temp_bwb)
     print('Cleaning BWB data and writing to CSV')
     bwbXMLprocess.main(rootdir=dir_temp_bwb, outputdir=dir_output_bwb)
 
@@ -37,4 +37,4 @@ def combine_to_txt():
 if __name__ == "__main__":
     create_bwb_csv()
     create_recht_csv()
-    combine_to_txt()
+    # combine_to_txt()

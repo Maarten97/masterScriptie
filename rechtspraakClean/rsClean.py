@@ -152,7 +152,7 @@ def open_text(input_dir, output_dir):
 
                     for row in reader:
                         court_text = row['text']
-                        if court_text:
+                        if court_text and not court_text.startswith('ERROR'):
                             court_text = clean_text(court_text)
                             if len(court_text) == 0:
                                 print(f'No court text cleaned for {row['id']}')
@@ -184,6 +184,6 @@ def main(inputdr, output):
 
 
 if __name__ == '__main__':
-    input_dir = 'C:/Programming/Dataset/Test'
-    output_dir = 'C:/Programming/Dataset/TestOut/rechtspraaktst.csv'
+    input_dir = 'M:/BIT/Test/'
+    output_dir = 'M:/BIT/Test/rechtspraaktst.csv'
     main(input_dir, output_dir)

@@ -21,6 +21,6 @@ def main(dirs, out):
 
 
 if __name__ == '__main__':
-    directory = 'C:/Programming/Dataset/Rechtspraak'
-    out_dir = 'C:/Programming/Dataset/RechtspraakOutput'
+    directory = 'M:/BIT/Test'
+    out_dir = 'M:/BIT/Test'
     process_csv(directory, out_dir)
