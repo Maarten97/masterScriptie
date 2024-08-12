@@ -1,5 +1,10 @@
 import os
 
+# Usage
+input_file = 'C:/Users/looijengam/Documents/Final/dataset.txt'
+output_file = 'C:/Users/looijengam/Documents/datasetRandom2.txt'
+skip_lines = 5000000  # Number of lines to skip
+num_lines = 10000  # Number of lines to extract after skippiif __name__ == '__main__':
 
 def save_first_and_last_10000_lines(input_file_path, output_file_path):
     first_lines = []
@@ -39,7 +44,28 @@ def save_first_and_last_10000_lines(input_file_path, output_file_path):
         output_file.writelines(last_lines)
 
 
-# Usage
-input_file = 'M:/BIT/dataset.txt'
-output_file = 'M:/BIT/datasetRandom.txt'
-save_first_and_last_10000_lines(input_file, output_file)
+def skip_and_extract_lines(input_file, output_file, skip_lines, num_lines):
+    try:
+        with open(input_file, 'r', encoding='utf-8', errors='ignore') as infile, open(output_file, 'w', encoding='utf-8') as outfile:
+            # Skip the first `skip_lines` lines
+            for _ in range(skip_lines):
+                line = infile.readline()
+                if not line:
+                    print(f"File ended before skipping {skip_lines} lines.")
+                    return
+
+            # Extract the next `num_lines` lines
+            for _ in range(num_lines):
+                line = infile.readline()
+                if not line:
+                    break  # Stop if we reach the end of the file
+                outfile.write(line)
+
+        print(f"Successfully skipped {skip_lines} lines and extracted {num_lines} lines to {output_file}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+if __name__ == '__main__':
+    skip_and_extract_lines(input_file, output_file, skip_lines, num_lines)
+    # save_first_and_last_10000_lines(input_file, output_file)
