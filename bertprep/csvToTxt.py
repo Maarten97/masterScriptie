@@ -1,9 +1,8 @@
 import csv
-import os
 import re
 
-
 # Code to check the mega full txt file. With great inspiration from the World Wide Web.
+
 
 def merge_csv(inputdirs, tempdir):
     csv.field_size_limit(10**9)
@@ -58,4 +57,3 @@ if __name__ == '__main__':
     input_dir = 'C:/Users/looijengam/Documents/DatasetFinal/random.csv'
     output_dir = 'output.txt'
     main(inputs=input_dir, outputs=output_dir, tempdir=None)
-
