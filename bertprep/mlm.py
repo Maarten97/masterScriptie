@@ -7,8 +7,8 @@ from transformers import BertTokenizer, BertForMaskedLM, AdamW
 text_dir = 'M:/BIT/datasetRandom.txt'
 
 # Initialize the tokenizer and model
-tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
-model = BertForMaskedLM.from_pretrained('bert-base-cased')
+tokenizer = BertTokenizer.from_pretrained('bert-base-dutch')
+model = BertForMaskedLM.from_pretrained('GroNLP/bert-base-dutch-cased')
 
 
 class RechtDataset(torch.utils.data.Dataset):
@@ -78,8 +78,8 @@ def main():
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     print("torch.device('cuda')") if torch.cuda.is_available() else print("torch.device('cpu')")
     train_model(model, loader, device, epochs=2, lr=5e-5)
-    model.save_pretrained('./bert-mlm-model')
-    tokenizer.save_pretrained('./bert-mlm-model')
+    model.save_pretrained('./bertje-mlm-model')
+    tokenizer.save_pretrained('./bertje-mlm-model')
 
 
 if __name__ == "__main__":
