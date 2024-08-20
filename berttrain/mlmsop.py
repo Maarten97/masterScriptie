@@ -3,10 +3,12 @@ import torch
 from tqdm import tqdm
 from transformers import BertTokenizer, BertForPreTraining
 from torch.optim import AdamW
+import logging
 
 # Paths
 TEXT_DIR = 'C:/Users/looijengam/Documents/datasetRandom4.txt'
 MODEL_OUTPUT_DIR = './bertje-mlm-sop-model'
+CHECKPOINT_DIR = './model_checkpoints'
 
 # Training arguments
 PRETRAINED_MODEL_NAME = 'GroNLP/bert-base-dutch-cased'
@@ -20,11 +22,16 @@ WEIGHT_DECAY = 0.01
 MLM_LOSS_WEIGHT = 1.5
 SOP_LOSS_WEIGHT = 0.5
 
+# Set up logging
+logging.basicConfig(filename='training_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
+logger = logging.getLogger()
+
 # Check for GPU availability
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 num_gpus = torch.cuda.device_count()
 
 print(f'Using device: {device}, number of GPUs: {num_gpus}')
+logger.info(f'Using device: {device}, number of GPUs: {num_gpus}')
 
 # Initialize the tokenizer and model
 tokenizer = BertTokenizer.from_pretrained(TOKENIZER_NAME)
@@ -91,7 +98,11 @@ def train_model(model, loader, device, epochs, lr, weight_decay, mlm_loss_weight
     sop_loss_fn = torch.nn.CrossEntropyLoss()  # Used for SOP
 
     for epoch in range(epochs):
+        total_epoch_loss = 0
+        mlm_epoch_loss = 0
+        sop_epoch_loss = 0
         loop = tqdm(loader, leave=True)
+
         for batch in loop:
             optimizer.zero_grad()
             input_ids = batch['input_ids'].to(device)
@@ -106,12 +117,15 @@ def train_model(model, loader, device, epochs, lr, weight_decay, mlm_loss_weight
 
             # Calculate MLM loss
             mlm_loss = mlm_loss_fn(prediction_logits.view(-1, prediction_logits.size(-1)), labels.view(-1))
+            mlm_epoch_loss += mlm_loss.item()
 
             # Calculate SOP loss
             sop_loss = sop_loss_fn(seq_relationship_logits.view(-1, 2), next_sentence_label.view(-1))
+            sop_epoch_loss += sop_loss.item()
 
             # Combine losses with custom weights
             total_loss = (mlm_loss_weight * mlm_loss) + (sop_loss_weight * sop_loss)
+            total_epoch_loss += total_loss.item()
 
             # Backpropagation and optimization
             total_loss.backward()
@@ -119,6 +133,45 @@ def train_model(model, loader, device, epochs, lr, weight_decay, mlm_loss_weight
 
             loop.set_description(f'Epoch {epoch + 1}')
             loop.set_postfix(loss=total_loss.item())
+
+            # Log only on the main GPU
+            if torch.cuda.current_device() == 0:
+                logger.info(f'Batch Loss: {total_loss.item()} | MLM Loss: {mlm_loss.item()} | SOP Loss: {sop_loss.item()}')
+
+        # Log epoch losses only on the main GPU
+        if torch.cuda.current_device() == 0:
+            logger.info(f'Epoch {epoch + 1} | Total Loss: {total_epoch_loss/len(loader)} | MLM Loss: {mlm_epoch_loss/len(loader)} | SOP Loss: {sop_epoch_loss/len(loader)}')
+
+        # Save model checkpoint (from the main GPU)
+        if torch.cuda.current_device() == 0:
+            save_checkpoint(model, epoch)
+
+
+def log_hyperparameters():
+    """Log the hyperparameters used for the training."""
+    hyperparameters = {
+        'PRETRAINED_MODEL_NAME': PRETRAINED_MODEL_NAME,
+        'TOKENIZER_NAME': TOKENIZER_NAME,
+        'MAX_LENGTH': MAX_LENGTH,
+        'MASK_PROB': MASK_PROB,
+        'BATCH_SIZE': BATCH_SIZE,
+        'EPOCHS': EPOCHS,
+        'LEARNING_RATE': LEARNING_RATE,
+        'WEIGHT_DECAY': WEIGHT_DECAY,
+        'MLM_LOSS_WEIGHT': MLM_LOSS_WEIGHT,
+        'SOP_LOSS_WEIGHT': SOP_LOSS_WEIGHT,
+    }
+    logger.info(f'Hyperparameters: {hyperparameters}')
+
+
+def save_checkpoint(model, epoch, checkpoint_dir=CHECKPOINT_DIR):
+    """Save the model checkpoint, handling DataParallel model wrapping."""
+    if not os.path.exists(checkpoint_dir):
+        os.makedirs(checkpoint_dir)
+    model_to_save = model.module if hasattr(model, 'module') else model
+    model_to_save.save_pretrained(f'{checkpoint_dir}/model_epoch_{epoch}.bin')
+    logger.info(f'Model checkpoint saved for epoch {epoch}')
+
 
 def main():
     text = read_text_file(TEXT_DIR)
@@ -141,9 +194,11 @@ def main():
     train_model(model, loader, device, EPOCHS, LEARNING_RATE, WEIGHT_DECAY, MLM_LOSS_WEIGHT, SOP_LOSS_WEIGHT)
 
     # Save model and tokenizer
-    model.save_pretrained(MODEL_OUTPUT_DIR)
+    model_to_save = model.module if hasattr(model, 'module') else model
+    model_to_save.save_pretrained(MODEL_OUTPUT_DIR)
     tokenizer.save_pretrained(MODEL_OUTPUT_DIR)
 
 
 if __name__ == "__main__":
+    log_hyperparameters()
     main()
