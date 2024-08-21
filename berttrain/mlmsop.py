@@ -6,16 +6,16 @@ from torch.optim import AdamW
 import logging
 
 # Paths
-TEXT_DIR = 'C:/Users/looijengam/Documents/datasetRandom4.txt'
+TEXT_DIR = 'E:/BIT/datasetTest.txt'
 MODEL_OUTPUT_DIR = './bertje-mlm-sop-model'
 CHECKPOINT_DIR = './model_checkpoints'
 
 # Training arguments
 PRETRAINED_MODEL_NAME = 'GroNLP/bert-base-dutch-cased'
 TOKENIZER_NAME = 'GroNLP/bert-base-dutch-cased'
-MAX_LENGTH = 512
+MAX_LENGTH = 256
 MASK_PROB = 0.15
-BATCH_SIZE = 8
+BATCH_SIZE = 16
 EPOCHS = 3
 LEARNING_RATE = 1e-5
 WEIGHT_DECAY = 0.01
