@@ -6,7 +6,7 @@ from torch.optim import AdamW
 import logging
 
 # Paths
-TEXT_DIR = 'E:/BIT/datasetTest.txt'
+TEXT_DIR = './datasetTest.txt'
 MODEL_OUTPUT_DIR = './bertje-mlm-sop-model'
 CHECKPOINT_DIR = './model_checkpoints'
 
