@@ -3,7 +3,7 @@ from transformers import BertTokenizer, BertForPreTraining
 import os
 
 # Define the model and tokenizer name
-MODEL_NAME = 'GroNLP/bert-base-dutch-cased'
+MODEL_NAME = 'bert-base-multilingual-cased'
 MODEL_DIR = 'berttrain/bertje'  # Define the directory where you want to save the files
 
 # Create the directory if it does not exist
