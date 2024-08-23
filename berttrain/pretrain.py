@@ -12,7 +12,7 @@ import torch.nn as nn
 from tensorboardX import SummaryWriter
 
 import tokenization
-import models
+import bertje
 import optim
 import train
 
@@ -165,12 +165,12 @@ class BertModel4Pretrain(nn.Module):
     "Bert Model for Pretrain : Masked LM and next sentence classification"
     def __init__(self, cfg):
         super().__init__()
-        self.transformer = models.Transformer(cfg)
+        self.transformer = bertje.Transformer(cfg)
         self.fc = nn.Linear(cfg.dim, cfg.dim)
         self.activ1 = nn.Tanh()
         self.linear = nn.Linear(cfg.dim, cfg.dim)
-        self.activ2 = models.gelu
-        self.norm = models.LayerNorm(cfg)
+        self.activ2 = bertje.gelu
+        self.norm = bertje.LayerNorm(cfg)
         self.classifier = nn.Linear(cfg.dim, 2)
         # decoder is shared with embedding layer
         embed_weight = self.transformer.embed.tok_embed.weight
@@ -204,7 +204,7 @@ def main(train_cfg='config/pretrain.json',
          mask_prob=0.15):
 
     cfg = train.Config.from_json(train_cfg)
-    model_cfg = models.Config.from_json(model_cfg)
+    model_cfg = bertje.Config.from_json(model_cfg)
 
     set_seeds(cfg.seed)
 

@@ -9,10 +9,11 @@ import logging
 TEXT_DIR = './datasetTest.txt'
 MODEL_OUTPUT_DIR = './bertje-mlm-sop-model'
 CHECKPOINT_DIR = './model_checkpoints'
+LOCAL_MODEL_DIR = './bertje'
 
 # Training arguments
-PRETRAINED_MODEL_NAME = 'GroNLP/bert-base-dutch-cased'
-TOKENIZER_NAME = 'GroNLP/bert-base-dutch-cased'
+# PRETRAINED_MODEL_NAME = 'GroNLP/bert-base-dutch-cased'
+# TOKENIZER_NAME = 'GroNLP/bert-base-dutch-cased'
 MAX_LENGTH = 256
 MASK_PROB = 0.15
 BATCH_SIZE = 16
@@ -34,8 +35,8 @@ print(f'Using device: {device}, number of GPUs: {num_gpus}')
 logger.info(f'Using device: {device}, number of GPUs: {num_gpus}')
 
 # Initialize the tokenizer and model
-tokenizer = BertTokenizer.from_pretrained(TOKENIZER_NAME)
-model = BertForPreTraining.from_pretrained(PRETRAINED_MODEL_NAME)
+tokenizer = BertTokenizer.from_pretrained(LOCAL_MODEL_DIR)
+model = BertForPreTraining.from_pretrained(LOCAL_MODEL_DIR)
 
 # Use DataParallel if multiple GPUs are available
 if num_gpus > 1:
@@ -150,8 +151,8 @@ def train_model(model, loader, device, epochs, lr, weight_decay, mlm_loss_weight
 def log_hyperparameters():
     """Log the hyperparameters used for the training."""
     hyperparameters = {
-        'PRETRAINED_MODEL_NAME': PRETRAINED_MODEL_NAME,
-        'TOKENIZER_NAME': TOKENIZER_NAME,
+        'PRETRAINED_MODEL_NAME': LOCAL_MODEL_DIR,
+        'TOKENIZER_NAME': LOCAL_MODEL_DIR,
         'MAX_LENGTH': MAX_LENGTH,
         'MASK_PROB': MASK_PROB,
         'BATCH_SIZE': BATCH_SIZE,

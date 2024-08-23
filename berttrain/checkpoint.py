@@ -8,7 +8,7 @@ import torch
 
 
 # import ipdb
-# from models import *
+# from bertje import *
 
 def load_param(checkpoint_file, conversion_table):
     """

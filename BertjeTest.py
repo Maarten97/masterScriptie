@@ -1,13 +1,40 @@
 from huggingface_hub import get_full_repo_name
+from transformers import BertTokenizer, BertForPreTraining
+import os
+
+# Define the model and tokenizer name
+MODEL_NAME = 'GroNLP/bert-base-dutch-cased'
+MODEL_DIR = 'berttrain/bertje'  # Define the directory where you want to save the files
+
+# Create the directory if it does not exist
+os.makedirs(MODEL_DIR, exist_ok=True)
+
+def download_model_and_tokenizer(model_name, save_directory):
+    # Download and save the tokenizer
+    print(f"Downloading tokenizer for {model_name}...")
+    tokenizer = BertTokenizer.from_pretrained(model_name)
+    tokenizer.save_pretrained(save_directory)
+    print(f"Tokenizer saved to {save_directory}")
+
+    # Download and save the model
+    print(f"Downloading model for {model_name}...")
+    model = BertForPreTraining.from_pretrained(model_name)
+    model.save_pretrained(save_directory)
+    print(f"Model saved to {save_directory}")
+
+# Download and save the model and tokenizer
+download_model_and_tokenizer(MODEL_NAME, MODEL_DIR)
+
+print("Download complete!")
 
 # Test function to check if import works
-def test_huggingface_hub():
-    repo_name = "example_repo"
-    full_repo_name = get_full_repo_name(repo_name)
-    print(f"Full repo name: {full_repo_name}")
+# def test_huggingface_hub():
+#     repo_name = "example_repo"
+#     full_repo_name = get_full_repo_name(repo_name)
+#     print(f"Full repo name: {full_repo_name}")
 
 if __name__ == "__main__":
-    test_huggingface_hub()
+    download_model_and_tokenizer(model_name=MODEL_NAME, save_directory=MODEL_DIR)
 
 
 # import torch
