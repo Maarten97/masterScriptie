@@ -55,40 +55,56 @@ def train(rank, world_size, file_path):
     # Initialize the process group for DDP
     init_process_group(backend="nccl", rank=rank, world_size=world_size)
     torch.cuda.set_device(rank)
+    logger.info(f'Initialzed DDP with backend nccl, rank {rank} and world_size {world_size}')
 
     # Initialize the tokenizer and model
     tokenizer = BertTokenizer.from_pretrained(LOCAL_MODEL_DIR)
+    logger.info('Initialized tokenizer')
     model = BertForPreTraining.from_pretrained(LOCAL_MODEL_DIR)
+    logger.info('Initialized model')
     model = model.to(rank)
+    logger.info('model moved to GPU')
     model = DDP(model, device_ids=[rank])
+    logger.info(f'Model put in DDP with device_ids of {[rank]}')
 
     # Read and prepare the text data
     text = read_text_file(file_path)
+    logger.info('Dataset has been read and prepared for training')
 
     # Split the text into pairs of sentences for SOP task
     sentences = [line for line in text if line.strip()]
     sentence_pairs = [(sentences[i], sentences[i + 1]) for i in range(0, len(sentences) - 1, 2)]
+    logger.info('Text split into pairs of sentences for SOP task')
 
     # Shuffle sentence pairs
     shuffled_pairs = [(pair[1], pair[0]) if i % 2 != 0 else pair for i, pair in enumerate(sentence_pairs)]
+    logger.info('Shuffled pairs of sentences')
 
     # Prepare inputs for MLM and SOP
     texts = [f"{pair[0]} {tokenizer.sep_token} {pair[1]}" for pair in shuffled_pairs]
     inputs = tokenizer(texts, return_tensors='pt', max_length=MAX_LENGTH, truncation=True, padding='max_length')
     inputs = create_mlm_sop_labels(inputs, mask_prob=MASK_PROB, sentence_pairs=shuffled_pairs, tokenizer=tokenizer)
+    logger.info('Loaded inputs with labels')
 
     # Create dataset and dataloader
     dataset = RechtDataset(inputs)
+    logger.info('Loaded dataset')
     sampler = torch.utils.data.distributed.DistributedSampler(dataset, num_replicas=world_size, rank=rank)
-    loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=sampler, shuffle=True)
+    logger.info('Distributed sampler initialized')
+    loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=sampler)
+    logger.info('Loaded dataloader')
 
     # Set up optimizer and scheduler
     optimizer = AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
+    logger.info(f'Set up optimizer with learning rate of {LEARNING_RATE} and weight decay of {WEIGHT_DECAY}')
     total_steps = len(loader) * EPOCHS
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=total_steps)
+    logger.info('Linear scheduler initialized')
 
 # Training loop
+
     model.train()
+    logger.info('Started training')
     for epoch in range(EPOCHS):
         sampler.set_epoch(epoch)
         total_epoch_loss = 0
@@ -145,6 +161,7 @@ def train(rank, world_size, file_path):
             save_checkpoint(model, epoch)
 
     # Cleanup DDP
+    logger.info('Ended training')
     destroy_process_group()
 
 
