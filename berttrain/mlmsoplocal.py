@@ -24,6 +24,7 @@ LEARNING_RATE = 1e-5
 WEIGHT_DECAY = 0.01
 MLM_LOSS_WEIGHT = 1.5
 SOP_LOSS_WEIGHT = 0.5
+WARMUP_STEPS = 10000
 
 # Set up logging
 logging.basicConfig(filename='training_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
@@ -53,7 +54,7 @@ def read_text_file(file_path, encoding='utf-8'):
 
 def train(rank, world_size, file_path):
     # Initialize the process group for DDP
-    init_process_group(backend="nccl", rank=rank, world_size=world_size)
+    init_process_group(backend="nccl", rank=rank, world_size=world_size, init_method="env://")
     torch.cuda.set_device(rank)
     logger.info(f'Initialzed DDP with backend nccl, rank {rank} and world_size {world_size}')
 
@@ -98,7 +99,7 @@ def train(rank, world_size, file_path):
     optimizer = AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     logger.info(f'Set up optimizer with learning rate of {LEARNING_RATE} and weight decay of {WEIGHT_DECAY}')
     total_steps = len(loader) * EPOCHS
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=total_steps)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=WARMUP_STEPS, num_training_steps=total_steps)
     logger.info('Linear scheduler initialized')
 
 # Training loop
