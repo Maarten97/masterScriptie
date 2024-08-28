@@ -46,8 +46,8 @@ def print_lines(input_file, output_file, skip_lines, num_lines):
 
 
 if __name__ == '__main__':
-    input_file = 'C:/Users/looijengam/Documents/Final/dataset.txt'
-    output_file = 'C:/Users/looijengam/Documents/datasetRandom4.txt'
+    input_file = 'E:/BIT/dataset.txt'
+    output_file = 'E:/BIT/datasetTest.txt'
     skip_lines = 5000000  # Number of lines to skip
     num_lines = 10000  # Number of lines for both first and last
 

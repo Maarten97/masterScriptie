@@ -4,7 +4,7 @@ import os
 
 # Define the model and tokenizer name
 MODEL_NAME = 'bert-base-multilingual-cased'
-MODEL_DIR = 'berttrain/bertje'  # Define the directory where you want to save the files
+MODEL_DIR = 'berttrain/mbert'  # Define the directory where you want to save the files
 
 # Create the directory if it does not exist
 os.makedirs(MODEL_DIR, exist_ok=True)

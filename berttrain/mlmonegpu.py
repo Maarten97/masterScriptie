@@ -1,13 +1,10 @@
 import os
 import torch
-from torch.distributed import init_process_group, destroy_process_group
-from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import BertTokenizer, BertForPreTraining, get_linear_schedule_with_warmup
 from torch.optim import AdamW
 import logging
-
 
 # Paths
 TEXT_DIR = './datasetTest.txt'
@@ -30,10 +27,8 @@ WARMUP_STEPS = 10000
 logging.basicConfig(filename='training_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger()
 
-
 class RechtDataset(torch.utils.data.Dataset):
     """Custom Dataset for loading and encoding text data with MLM and SOP objectives."""
-
     def __init__(self, encodings):
         self.encodings = encodings
 
@@ -43,7 +38,6 @@ class RechtDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.encodings.input_ids)
 
-
 def read_text_file(file_path, encoding='utf-8'):
     """Read text data from the given file path with specified encoding."""
     if not os.path.exists(file_path):
@@ -52,22 +46,17 @@ def read_text_file(file_path, encoding='utf-8'):
     with open(file_path, 'r', encoding=encoding) as fp:
         return fp.read().splitlines()
 
-def train(rank, world_size, file_path):
-    # Initialize the process group for DDP
-    init_process_group(backend="nccl", rank=rank, world_size=world_size, init_method="env://")
-    # init_process_group(backend="nccl", rank=rank, world_size=world_size, init_method="localhost:2222")
-    torch.cuda.set_device(rank)
-    logger.info(f'Initialzed DDP with backend nccl, rank {rank} and world_size {world_size}')
+def train(file_path):
+    # Set device
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Initialize the tokenizer and model
     tokenizer = BertTokenizer.from_pretrained(LOCAL_MODEL_DIR)
     logger.info('Initialized tokenizer')
     model = BertForPreTraining.from_pretrained(LOCAL_MODEL_DIR)
     logger.info('Initialized model')
-    model = model.to(rank)
-    logger.info('model moved to GPU')
-    model = DDP(model, device_ids=[rank])
-    logger.info(f'Model put in DDP with device_ids of {[rank]}')
+    model = model.to(device)
+    logger.info('Model moved to GPU')
 
     # Read and prepare the text data
     text = read_text_file(file_path)
@@ -91,9 +80,7 @@ def train(rank, world_size, file_path):
     # Create dataset and dataloader
     dataset = RechtDataset(inputs)
     logger.info('Loaded dataset')
-    sampler = torch.utils.data.distributed.DistributedSampler(dataset, num_replicas=world_size, rank=rank)
-    logger.info('Distributed sampler initialized')
-    loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=sampler)
+    loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
     logger.info('Loaded dataloader')
 
     # Set up optimizer and scheduler
@@ -103,12 +90,10 @@ def train(rank, world_size, file_path):
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=WARMUP_STEPS, num_training_steps=total_steps)
     logger.info('Linear scheduler initialized')
 
-# Training loop
-
+    # Training loop
     model.train()
     logger.info('Started training')
     for epoch in range(EPOCHS):
-        sampler.set_epoch(epoch)
         total_epoch_loss = 0
         mlm_epoch_loss = 0
         sop_epoch_loss = 0
@@ -116,10 +101,10 @@ def train(rank, world_size, file_path):
 
         for step, batch in enumerate(loop):
             optimizer.zero_grad()
-            input_ids = batch['input_ids'].to(rank)
-            attention_mask = batch['attention_mask'].to(rank)
-            labels = batch['labels'].to(rank)
-            next_sentence_label = batch['next_sentence_label'].to(rank)
+            input_ids = batch['input_ids'].to(device)
+            attention_mask = batch['attention_mask'].to(device)
+            labels = batch['labels'].to(device)
+            next_sentence_label = batch['next_sentence_label'].to(device)
 
             # Forward pass
             outputs = model(input_ids, attention_mask=attention_mask)
@@ -148,24 +133,16 @@ def train(rank, world_size, file_path):
             loop.set_description(f'Epoch {epoch + 1}')
             loop.set_postfix(loss=total_loss.item())
 
-            # Log only on the main GPU
-            if rank == 0:
-                logger.info(
-                    f'Batch Loss: {total_loss.item()} | MLM Loss: {mlm_loss.item()} | SOP Loss: {sop_loss.item()}')
+            # Log batch losses
+            logger.info(f'Batch Loss: {total_loss.item()} | MLM Loss: {mlm_loss.item()} | SOP Loss: {sop_loss.item()}')
 
-        # Log epoch losses only on the main GPU
-        if rank == 0:
-            logger.info(
-                f'Epoch {epoch + 1} | Total Loss: {total_epoch_loss / len(loader)} | MLM Loss: {mlm_epoch_loss / len(loader)} | SOP Loss: {sop_epoch_loss / len(loader)}')
+        # Log epoch losses
+        logger.info(f'Epoch {epoch + 1} | Total Loss: {total_epoch_loss / len(loader)} | MLM Loss: {mlm_epoch_loss / len(loader)} | SOP Loss: {sop_epoch_loss / len(loader)}')
 
-        # Save model checkpoint (from the main GPU)
-        if rank == 0:
-            save_checkpoint(model, epoch)
+        # Save model checkpoint
+        save_checkpoint(model, epoch)
 
-    # Cleanup DDP
     logger.info('Ended training')
-    destroy_process_group()
-
 
 def create_mlm_sop_labels(inputs, mask_prob=MASK_PROB, sentence_pairs=None, tokenizer=None):
     """Create masked language model labels and SOP labels."""
@@ -187,7 +164,6 @@ def create_mlm_sop_labels(inputs, mask_prob=MASK_PROB, sentence_pairs=None, toke
 
     return inputs
 
-
 def log_hyperparameters():
     """Log the hyperparameters used for the training."""
     hyperparameters = {
@@ -204,21 +180,16 @@ def log_hyperparameters():
     }
     logger.info(f'Hyperparameters: {hyperparameters}')
 
-
 def save_checkpoint(model, epoch, checkpoint_dir=CHECKPOINT_DIR):
-    """Save the model checkpoint, handling DataParallel model wrapping."""
+    """Save the model checkpoint."""
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
-    model_to_save = model.module if hasattr(model, 'module') else model
-    model_to_save.save_pretrained(f'{checkpoint_dir}/model_epoch_{epoch}.bin')
+    model.save_pretrained(f'{checkpoint_dir}/model_epoch_{epoch}.bin')
     logger.info(f'Model checkpoint saved for epoch {epoch}')
-
 
 def main():
     log_hyperparameters()
-    world_size = torch.cuda.device_count()
-    torch.multiprocessing.spawn(train, args=(world_size, TEXT_DIR,), nprocs=world_size, join=True)
-
+    train(TEXT_DIR)
 
 if __name__ == "__main__":
     main()
