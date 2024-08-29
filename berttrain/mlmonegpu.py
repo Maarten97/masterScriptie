@@ -38,13 +38,32 @@ class RechtDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.encodings.input_ids)
 
+
 def read_text_file(file_path, encoding='utf-8'):
     """Read text data from the given file path with specified encoding."""
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"The file {file_path} does not exist.")
 
     with open(file_path, 'r', encoding=encoding) as fp:
-        return fp.read().splitlines()
+        temp = []
+        pairs = []
+        for line in fp.read().splitlines():
+            if line.strip():
+                temp.append(line)
+                if len(temp) == 2:
+                    #Do something with paired text
+                    pairs.append(temp)
+                    temp.clear()
+        if temp:
+            #One sentence left
+            temp.clear()
+    return pairs
+
+
+
+
+
+
 
 def train(file_path):
     # Set device
@@ -55,8 +74,8 @@ def train(file_path):
     logger.info('Initialized tokenizer')
     model = BertForPreTraining.from_pretrained(LOCAL_MODEL_DIR)
     logger.info('Initialized model')
-    model = model.to(device)
-    logger.info('Model moved to GPU')
+    # model = model.to(device)
+    # logger.info('Model moved to GPU')
 
     # Read and prepare the text data
     text = read_text_file(file_path)
@@ -73,9 +92,16 @@ def train(file_path):
 
     # Prepare inputs for MLM and SOP
     texts = [f"{pair[0]} {tokenizer.sep_token} {pair[1]}" for pair in shuffled_pairs]
+    print("Text created")
     inputs = tokenizer(texts, return_tensors='pt', max_length=MAX_LENGTH, truncation=True, padding='max_length')
+    print("inputs created")
     inputs = create_mlm_sop_labels(inputs, mask_prob=MASK_PROB, sentence_pairs=shuffled_pairs, tokenizer=tokenizer)
+    print("inputs labeled")
     logger.info('Loaded inputs with labels')
+
+    model = model.to(device)
+    logger.info('Model moved to GPU')
+    print(f'Model running on {device}')
 
     # Create dataset and dataloader
     dataset = RechtDataset(inputs)
