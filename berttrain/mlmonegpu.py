@@ -54,6 +54,8 @@ def read_text_file(file_path, encoding='utf-8'):
                     #Do something with paired text
                     pairs.append(temp)
                     temp.clear()
+            else:
+                temp.clear()
         if temp:
             #One sentence left
             temp.clear()
@@ -170,6 +172,7 @@ def train(file_path):
 
     logger.info('Ended training')
 
+
 def create_mlm_sop_labels(inputs, mask_prob=MASK_PROB, sentence_pairs=None, tokenizer=None):
     """Create masked language model labels and SOP labels."""
     inputs['labels'] = inputs.input_ids.clone().detach()
@@ -189,6 +192,7 @@ def create_mlm_sop_labels(inputs, mask_prob=MASK_PROB, sentence_pairs=None, toke
     logger.info("MLM SOP LABELS CREATED")
 
     return inputs
+
 
 def log_hyperparameters():
     """Log the hyperparameters used for the training."""
