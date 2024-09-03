@@ -27,6 +27,7 @@ WARMUP_STEPS = 10000
 logging.basicConfig(filename='training_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger()
 
+
 class RechtDataset(torch.utils.data.Dataset):
     """Custom Dataset for loading and encoding text data with MLM and SOP objectives."""
     def __init__(self, encodings):
@@ -39,34 +40,6 @@ class RechtDataset(torch.utils.data.Dataset):
         return len(self.encodings.input_ids)
 
 
-def read_text_file(file_path, encoding='utf-8'):
-    """Read text data from the given file path with specified encoding."""
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"The file {file_path} does not exist.")
-
-    with open(file_path, 'r', encoding=encoding) as fp:
-        temp = []
-        pairs = []
-        for line in fp.read().splitlines():
-            if line.strip():
-                temp.append(line)
-                if len(temp) == 2:
-                    #Do something with paired text
-                    pairs.append(temp)
-                    temp.clear()
-            else:
-                temp.clear()
-        if temp:
-            #One sentence left
-            temp.clear()
-    return pairs
-
-
-
-
-
-
-
 def train(file_path):
     # Set device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -74,42 +47,55 @@ def train(file_path):
     # Initialize the tokenizer and model
     tokenizer = BertTokenizer.from_pretrained(LOCAL_MODEL_DIR)
     logger.info('Initialized tokenizer')
+    print('Initialized tokenizer')
     model = BertForPreTraining.from_pretrained(LOCAL_MODEL_DIR)
     logger.info('Initialized model')
+    print('Initialized model')
     # model = model.to(device)
     # logger.info('Model moved to GPU')
 
-    # Read and prepare the text data
-    text = read_text_file(file_path)
-    logger.info('Dataset has been read and prepared for training')
+    # # Read and prepare the text data
+    # text = read_text_file(file_path)
+    # logger.info('Dataset has been read and prepared for training')
+    #
+    # # Split the text into pairs of sentences for SOP task
+    # sentences = [line for line in text if line.strip()]
+    # sentence_pairs = [(sentences[i], sentences[i + 1]) for i in range(0, len(sentences) - 1, 2)]
+    # logger.info('Text split into pairs of sentences for SOP task')
+    #
+    # # Shuffle sentence pairs
+    # shuffled_pairs = [(pair[1], pair[0]) if i % 2 != 0 else pair for i, pair in enumerate(sentence_pairs)]
+    # logger.info('Shuffled pairs of sentences')
 
-    # Split the text into pairs of sentences for SOP task
-    sentences = [line for line in text if line.strip()]
-    sentence_pairs = [(sentences[i], sentences[i + 1]) for i in range(0, len(sentences) - 1, 2)]
-    logger.info('Text split into pairs of sentences for SOP task')
-
-    # Shuffle sentence pairs
-    shuffled_pairs = [(pair[1], pair[0]) if i % 2 != 0 else pair for i, pair in enumerate(sentence_pairs)]
-    logger.info('Shuffled pairs of sentences')
+    sop_pairs = create_input(file_path)
+    print("SOP Text created")
 
     # Prepare inputs for MLM and SOP
-    texts = [f"{pair[0]} {tokenizer.sep_token} {pair[1]}" for pair in shuffled_pairs]
-    print("Text created")
-    inputs = tokenizer(texts, return_tensors='pt', max_length=MAX_LENGTH, truncation=True, padding='max_length')
+    mlm_text = [f"{pair[0]} {tokenizer.sep_token} {pair[1]}" for pair in sop_pairs]
+    print("MLM Text created")
+    token_input = tokenizer(mlm_text, return_tensors='pt', max_length=MAX_LENGTH, truncation=True, padding='max_length')
     print("inputs created")
-    inputs = create_mlm_sop_labels(inputs, mask_prob=MASK_PROB, sentence_pairs=shuffled_pairs, tokenizer=tokenizer)
+    token_input = create_mlm_sop_labels(token_input, mask_prob=MASK_PROB, sentence_pairs=sop_pairs, tokenizer=tokenizer)
     print("inputs labeled")
     logger.info('Loaded inputs with labels')
 
+    # Clean variables to save RAM
+    sop_pairs.clear()
+    mlm_text.clear()
+    print("Old variables cleaned")
+
     model = model.to(device)
-    logger.info('Model moved to GPU')
+    logger.info(f'Model moved to {device}')
     print(f'Model running on {device}')
 
     # Create dataset and dataloader
-    dataset = RechtDataset(inputs)
+    dataset = RechtDataset(token_input)
     logger.info('Loaded dataset')
+    print('Loaded dataset')
     loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
     logger.info('Loaded dataloader')
+    print('Loaded dataloader')
+    token_input.clear()
 
     # Set up optimizer and scheduler
     optimizer = AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
@@ -121,6 +107,7 @@ def train(file_path):
     # Training loop
     model.train()
     logger.info('Started training')
+    print('Started training')
     for epoch in range(EPOCHS):
         total_epoch_loss = 0
         mlm_epoch_loss = 0
@@ -173,6 +160,35 @@ def train(file_path):
     logger.info('Ended training')
 
 
+def create_input(file_path, encoding='utf-8'):
+    """Read text data from the given file path with specified encoding."""
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"The file {file_path} does not exist.")
+
+    with open(file_path, 'r', encoding=encoding) as fp:
+        temp = []
+        pairs = []
+        i = 0
+
+        for line in fp.read().splitlines():
+            if line.strip():
+                temp.append(line)
+                if len(temp) == 2:
+                    if i % 2 != 0:
+                        temp.reverse()
+                    pairs.append(list(temp))
+                    temp.clear()
+                    i += 1
+            else:
+                temp.clear()
+        if temp:
+            # One sentence left
+            temp.clear()
+    logger.info(f'Read pairs lines from {file_path}')
+    print(f'Read pairs lines from {file_path}')
+    return pairs
+
+
 def create_mlm_sop_labels(inputs, mask_prob=MASK_PROB, sentence_pairs=None, tokenizer=None):
     """Create masked language model labels and SOP labels."""
     inputs['labels'] = inputs.input_ids.clone().detach()
@@ -190,6 +206,7 @@ def create_mlm_sop_labels(inputs, mask_prob=MASK_PROB, sentence_pairs=None, toke
     sop_labels = torch.LongTensor([0 if i % 2 == 0 else 1 for i in range(len(sentence_pairs))])
     inputs['next_sentence_label'] = sop_labels
     logger.info("MLM SOP LABELS CREATED")
+    print("MLM SOP LABELS CREATED")
 
     return inputs
 
@@ -210,6 +227,7 @@ def log_hyperparameters():
     }
     logger.info(f'Hyperparameters: {hyperparameters}')
 
+
 def save_checkpoint(model, epoch, checkpoint_dir=CHECKPOINT_DIR):
     """Save the model checkpoint."""
     if not os.path.exists(checkpoint_dir):
@@ -217,9 +235,11 @@ def save_checkpoint(model, epoch, checkpoint_dir=CHECKPOINT_DIR):
     model.save_pretrained(f'{checkpoint_dir}/model_epoch_{epoch}.bin')
     logger.info(f'Model checkpoint saved for epoch {epoch}')
 
+
 def main():
     log_hyperparameters()
     train(TEXT_DIR)
+
 
 if __name__ == "__main__":
     main()
