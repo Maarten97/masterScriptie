@@ -41,36 +41,23 @@ class RechtDataset(torch.utils.data.Dataset):
 
 
 def train(file_path):
-    # Set device
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Identify primary GPU (e.g., lowest available device ID)
     if torch.cuda.is_available():
-        device = torch.device("cuda")
-        logger.info(f'CUDA is available on {torch.cuda.device_count()}')
-        print('CUDA is available')
-
+        primary_gpu = get_gpu_id()
+    else:
+        primary_gpu = torch.device("cpu")
+        logger.info('No CUDA devices available, using CPU')
+    device = primary_gpu
+    logger.info(f'Using device: {device}')
 
     # Initialize the tokenizer and model
     tokenizer = BertTokenizer.from_pretrained(LOCAL_MODEL_DIR)
     logger.info('Initialized tokenizer')
     print('Initialized tokenizer')
+
     model = BertForPreTraining.from_pretrained(LOCAL_MODEL_DIR)
     logger.info('Initialized model')
     print('Initialized model')
-    # model = model.to(device)
-    # logger.info('Model moved to GPU')
-
-    # # Read and prepare the text data
-    # text = read_text_file(file_path)
-    # logger.info('Dataset has been read and prepared for training')
-    #
-    # # Split the text into pairs of sentences for SOP task
-    # sentences = [line for line in text if line.strip()]
-    # sentence_pairs = [(sentences[i], sentences[i + 1]) for i in range(0, len(sentences) - 1, 2)]
-    # logger.info('Text split into pairs of sentences for SOP task')
-    #
-    # # Shuffle sentence pairs
-    # shuffled_pairs = [(pair[1], pair[0]) if i % 2 != 0 else pair for i, pair in enumerate(sentence_pairs)]
-    # logger.info('Shuffled pairs of sentences')
 
     sop_pairs = create_input(file_path)
     print("SOP Text created")
@@ -100,7 +87,6 @@ def train(file_path):
     loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
     logger.info('Loaded dataloader')
     print('Loaded dataloader')
-    token_input.clear()
 
     # Set up optimizer and scheduler
     optimizer = AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
@@ -154,17 +140,17 @@ def train(file_path):
             loop.set_postfix(loss=total_loss.item())
 
             # Log only on the main GPU
-            if torch.cuda.current_device() == 0 or not torch.cuda.is_available():
+            if torch.cuda.current_device() == primary_gpu.index or not torch.cuda.is_available():
                 logger.info(
                     f'Batch Loss: {total_loss.item()} | MLM Loss: {mlm_loss.item()} | SOP Loss: {sop_loss.item()} '
-                    f'on main GPU {torch.cuda.current_device()}')
+                    f'on main GPU {primary_gpu.index}')
             else:
                 logger.info(
                     f'Batch Loss: {total_loss.item()} | MLM Loss: {mlm_loss.item()} | SOP Loss: {sop_loss.item()} '
                     f'on GPU {torch.cuda.current_device()}')
 
         # Log epoch losses only on the main GPU
-        if torch.cuda.current_device() == 0 or not torch.cuda.is_available():
+        if torch.cuda.current_device() == primary_gpu.index or not torch.cuda.is_available():
             logger.info(
                 f'Epoch {epoch + 1} | Total Loss: {total_epoch_loss / len(loader)} | '
                 f'MLM Loss: {mlm_epoch_loss / len(loader)} | SOP Loss: {sop_epoch_loss / len(loader)} on main GPU')
@@ -175,13 +161,29 @@ def train(file_path):
                 f'on GPU {torch.cuda.current_device()}')
 
         # Save model checkpoint (from the main GPU)
-        if torch.cuda.current_device() == 0 or not torch.cuda.is_available():
+        if torch.cuda.current_device() == primary_gpu.index or not torch.cuda.is_available():
             save_checkpoint(model, epoch)
             logger.info(f'Saving checkpoint to {CHECKPOINT_DIR}')
         else:
             logger.info(f'Trying to save from not the ')
 
     logger.info('Ended training')
+
+
+def get_gpu_id():
+    # Obtain the list of GPUs assigned by SLURM
+    cuda_visible_devices = os.getenv('CUDA_VISIBLE_DEVICES')
+    if cuda_visible_devices is None:
+        raise RuntimeError(
+            "CUDA_VISIBLE_DEVICES is not set. This script should be run under a SLURM job with GPUs allocated.")
+
+    # Split the device IDs and select the first one as the primary GPU
+    visible_device_ids = [int(x) for x in cuda_visible_devices.split(',')]
+    primary_gpu = torch.device(f"cuda:{visible_device_ids[0]}")
+
+    logger.info(f'Using GPUs: {cuda_visible_devices}')
+    logger.info(f'Primary GPU set to cuda:{visible_device_ids[0]}')
+    return primary_gpu
 
 
 def create_input(file_path, encoding='utf-8'):
