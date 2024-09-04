@@ -8,9 +8,9 @@ import logging
 
 # Paths
 TEXT_DIR = './datasetTest.txt'
-MODEL_OUTPUT_DIR = './mbert-mlm-sop-model'
+MODEL_OUTPUT_DIR = './bertje-mlm-sop-model'
 CHECKPOINT_DIR = './model_checkpoints'
-LOCAL_MODEL_DIR = './mbert'
+LOCAL_MODEL_DIR = 'bert-base-multilingual-cased'
 
 # Training arguments
 MAX_LENGTH = 256
@@ -154,7 +154,7 @@ def train(file_path):
             loop.set_postfix(loss=total_loss.item())
 
             # Log only on the main GPU
-            if torch.cuda.current_device() == 0:
+            if torch.cuda.current_device() == 0 or not torch.cuda.is_available():
                 logger.info(
                     f'Batch Loss: {total_loss.item()} | MLM Loss: {mlm_loss.item()} | SOP Loss: {sop_loss.item()} '
                     f'on main GPU {torch.cuda.current_device()}')
@@ -164,7 +164,7 @@ def train(file_path):
                     f'on GPU {torch.cuda.current_device()}')
 
         # Log epoch losses only on the main GPU
-        if torch.cuda.current_device() == 0:
+        if torch.cuda.current_device() == 0 or not torch.cuda.is_available():
             logger.info(
                 f'Epoch {epoch + 1} | Total Loss: {total_epoch_loss / len(loader)} | '
                 f'MLM Loss: {mlm_epoch_loss / len(loader)} | SOP Loss: {sop_epoch_loss / len(loader)} on main GPU')
@@ -175,7 +175,7 @@ def train(file_path):
                 f'on GPU {torch.cuda.current_device()}')
 
         # Save model checkpoint (from the main GPU)
-        if torch.cuda.current_device() == 0:
+        if torch.cuda.current_device() == 0 or not torch.cuda.is_available():
             save_checkpoint(model, epoch)
             logger.info(f'Saving checkpoint to {CHECKPOINT_DIR}')
         else:
