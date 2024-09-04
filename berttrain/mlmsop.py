@@ -7,10 +7,10 @@ from torch.optim import AdamW
 import logging
 
 # Paths
-TEXT_DIR = './datasetTest.txt'
+TEXT_DIR = './dataset.txt'
 MODEL_OUTPUT_DIR = './bertje-mlm-sop-model'
 CHECKPOINT_DIR = './model_checkpoints'
-LOCAL_MODEL_DIR = 'bert-base-multilingual-cased'
+LOCAL_MODEL_DIR = './bertje'
 
 # Training arguments
 MAX_LENGTH = 256
