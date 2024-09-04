@@ -43,7 +43,7 @@ class RechtDataset(torch.utils.data.Dataset):
 def train(file_path):
     # Identify primary GPU (e.g., lowest available device ID)
     if torch.cuda.is_available():
-        primary_gpu = get_gpu_id()
+        primary_gpu = torch.device("cuda")
     else:
         primary_gpu = torch.device("cpu")
         logger.info('No CUDA devices available, using CPU')
@@ -139,33 +139,47 @@ def train(file_path):
             loop.set_description(f'Epoch {epoch + 1}')
             loop.set_postfix(loss=total_loss.item())
 
-            # Log only on the main GPU
-            if torch.cuda.current_device() == primary_gpu.index or not torch.cuda.is_available():
-                logger.info(
-                    f'Batch Loss: {total_loss.item()} | MLM Loss: {mlm_loss.item()} | SOP Loss: {sop_loss.item()} '
-                    f'on main GPU {primary_gpu.index}')
-            else:
-                logger.info(
-                    f'Batch Loss: {total_loss.item()} | MLM Loss: {mlm_loss.item()} | SOP Loss: {sop_loss.item()} '
-                    f'on GPU {torch.cuda.current_device()}')
+    #         # Log only on the main GPU
+    #         if torch.cuda.current_device() == primary_gpu.index or not torch.cuda.is_available():
+    #             logger.info(
+    #                 f'Batch Loss: {total_loss.item()} | MLM Loss: {mlm_loss.item()} | SOP Loss: {sop_loss.item()} '
+    #                 f'on main GPU {primary_gpu.index}')
+    #         else:
+    #             logger.info(
+    #                 f'Batch Loss: {total_loss.item()} | MLM Loss: {mlm_loss.item()} | SOP Loss: {sop_loss.item()} '
+    #                 f'on GPU {torch.cuda.current_device()}')
+    #
+    #     # Log epoch losses only on the main GPU
+    #     if torch.cuda.current_device() == primary_gpu.index or not torch.cuda.is_available():
+    #         logger.info(
+    #             f'Epoch {epoch + 1} | Total Loss: {total_epoch_loss / len(loader)} | '
+    #             f'MLM Loss: {mlm_epoch_loss / len(loader)} | SOP Loss: {sop_epoch_loss / len(loader)} on main GPU')
+    #     else:
+    #         logger.info(
+    #             f'Epoch {epoch + 1} | Total Loss: {total_epoch_loss / len(loader)} | '
+    #             f'MLM Loss: {mlm_epoch_loss / len(loader)} | SOP Loss: {sop_epoch_loss / len(loader)} '
+    #             f'on GPU {torch.cuda.current_device()}')
+    #
+    #     # Save model checkpoint (from the main GPU)
+    #     if torch.cuda.current_device() == primary_gpu.index or not torch.cuda.is_available():
+    #         save_checkpoint(model, epoch)
+    #         logger.info(f'Saving checkpoint to {CHECKPOINT_DIR}')
+    #     else:
+    #         logger.info(f'Trying to save from not the ')
+    #
+    # logger.info('Ended training')
 
-        # Log epoch losses only on the main GPU
-        if torch.cuda.current_device() == primary_gpu.index or not torch.cuda.is_available():
             logger.info(
-                f'Epoch {epoch + 1} | Total Loss: {total_epoch_loss / len(loader)} | '
-                f'MLM Loss: {mlm_epoch_loss / len(loader)} | SOP Loss: {sop_epoch_loss / len(loader)} on main GPU')
-        else:
-            logger.info(
-                f'Epoch {epoch + 1} | Total Loss: {total_epoch_loss / len(loader)} | '
-                f'MLM Loss: {mlm_epoch_loss / len(loader)} | SOP Loss: {sop_epoch_loss / len(loader)} '
+                f'Batch Loss: {total_loss.item()} | MLM Loss: {mlm_loss.item()} | SOP Loss: {sop_loss.item()} '
                 f'on GPU {torch.cuda.current_device()}')
 
-        # Save model checkpoint (from the main GPU)
-        if torch.cuda.current_device() == primary_gpu.index or not torch.cuda.is_available():
-            save_checkpoint(model, epoch)
-            logger.info(f'Saving checkpoint to {CHECKPOINT_DIR}')
-        else:
-            logger.info(f'Trying to save from not the ')
+        logger.info(
+            f'Epoch {epoch + 1} | Total Loss: {total_epoch_loss / len(loader)} | '
+            f'MLM Loss: {mlm_epoch_loss / len(loader)} | SOP Loss: {sop_epoch_loss / len(loader)} '
+            f'on GPU {torch.cuda.current_device()}')
+
+        save_checkpoint(model, epoch)
+        logger.info(f'Saving checkpoint to {CHECKPOINT_DIR}')
 
     logger.info('Ended training')
 
