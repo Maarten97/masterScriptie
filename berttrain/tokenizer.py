@@ -5,7 +5,7 @@ import mmap
 from transformers import BertTokenizer
 from multiprocessing import Pool, cpu_count
 
-TEXT_DIR = './datasetTest.txt'
+TEXT_DIR = './dataset.txt'
 TOKENIZED_DATA_PATH = './tokenized_dataset.pt'
 LOCAL_MODEL_DIR = './bertje'
 CHUNK_SIZE = 100000
@@ -86,8 +86,6 @@ def main():
         # Save the tokenized data to disk
         torch.save(tokenized_data, TOKENIZED_DATA_PATH)
         logger.info(f"Tokenized dataset saved to {TOKENIZED_DATA_PATH}")
-
-    # Further processing (e.g., training) can be done here...
 
 
 if __name__ == '__main__':
