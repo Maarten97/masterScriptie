@@ -3,7 +3,7 @@ import torch
 import logging
 import mmap
 from transformers import BertTokenizer
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool, cpu_count, get_context
 
 TEXT_DIR = './dataset.txt'
 TOKENIZED_DATA_PATH = './tokenized_dataset.pt'
@@ -59,7 +59,7 @@ def parallel_tokenization_with_mmap(file_path, tokenizer, chunk_size=CHUNK_SIZE)
     logger.info(f"File split into {len(input_chunks)} chunks for parallel processing")
 
     # Use multiprocessing Pool to tokenize in parallel
-    with Pool(cpu_count()) as pool:
+    with get_context("spawn").Pool(cpu_count()) as pool:
         tokenized_chunks = pool.starmap(tokenize_chunk, [(chunk, tokenizer) for chunk in input_chunks])
 
     # Combine tokenized outputs
