@@ -6,9 +6,13 @@ from transformers import BertTokenizer
 from multiprocessing import Pool, cpu_count, get_context
 
 TEXT_DIR = './dataset.txt'
-TOKENIZED_DATA_PATH = './tokenized_dataset.pt'
-LOCAL_MODEL_DIR = './mbert'
-CHUNK_SIZE = 100000
+TOKENIZED_CHUNKS_DIR = './tokenized_chunks'
+MERGED_DATA_PATH = './merged_tokenized_data.pt'
+LOCAL_MODEL_DIR = './bertje'
+CHUNK_SIZE = 5000
+
+# Ensure the output directory for tokenized chunks exists
+os.makedirs(TOKENIZED_CHUNKS_DIR, exist_ok=True)
 
 # Set up logging
 logging.basicConfig(filename='tokenization_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
@@ -44,6 +48,13 @@ def read_chunk_from_memory(mmapped_file, chunk_size):
     return lines
 
 
+def save_tokenized_data_pt(output_file, tokenized_data):
+    """Save tokenized data directly to a .pt file."""
+    # Save the tokenized tensor directly to .pt file
+    torch.save(tokenized_data, output_file)
+    logger.info(f"Saved tokenized data to {output_file}")
+
+
 def parallel_tokenization_with_mmap(file_path, tokenizer, chunk_size=CHUNK_SIZE):
     """Tokenize the text data in parallel using memory-mapped file and multiple CPU cores."""
     mmapped_file = memory_map_file(file_path)
@@ -58,16 +69,24 @@ def parallel_tokenization_with_mmap(file_path, tokenizer, chunk_size=CHUNK_SIZE)
 
     logger.info(f"File split into {len(input_chunks)} chunks for parallel processing")
 
-    # Use multiprocessing Pool to tokenize in parallel
+    # Use multiprocessing Pool to tokenize in parallel with 'spawn' context
+    logger.info(f"Creating Pool with cores = {cpu_count()}")
     with get_context("spawn").Pool(cpu_count()) as pool:
-        tokenized_chunks = pool.starmap(tokenize_chunk, [(chunk, tokenizer) for chunk in input_chunks])
+        for i, chunk in enumerate(input_chunks):
+            tokenized_chunk = pool.starmap(tokenize_chunk, [(chunk, tokenizer)])
 
-    # Combine tokenized outputs
-    combined_tokenized_data = {key: torch.cat([chunk[key] for chunk in tokenized_chunks], dim=0) for key in
-                               tokenized_chunks[0]}
+            # Save each tokenized chunk directly to .pt file
+            chunk_output_path = os.path.join(TOKENIZED_CHUNKS_DIR, f"tokenized_chunk_{i}.pt")
+            save_tokenized_data_pt(chunk_output_path, tokenized_chunk[0])
+            logger.info(f"Saved tokenized chunk {i} to {chunk_output_path}")
 
-    logger.info(f"Tokenization complete. {len(combined_tokenized_data['input_ids'])} samples tokenized.")
-    return combined_tokenized_data
+            # Remove the processed chunk to free up memory
+            del input_chunks[i]
+            tokenized_chunk = None  # Also free the tokenized chunk
+            logger.info(f"Tokenized chunk {i} done")
+
+    # Close the memory-mapped file after use to release resources
+    mmapped_file.close()
 
 
 def main():
@@ -75,17 +94,11 @@ def main():
     tokenizer = BertTokenizer.from_pretrained(LOCAL_MODEL_DIR)
     logger.info('Initialized tokenizer')
 
-    # Check if tokenized data exists
-    if os.path.exists(TOKENIZED_DATA_PATH):
-        logger.info("Loading tokenized dataset from disk")
-        tokenized_data = torch.load(TOKENIZED_DATA_PATH)
-    else:
-        logger.info("Tokenized dataset not found, processing from memory-mapped text")
-        tokenized_data = parallel_tokenization_with_mmap(TEXT_DIR, tokenizer)
+    # Start the tokenization process with memory-mapped input
+    logger.info("Processing from memory-mapped text")
+    parallel_tokenization_with_mmap(TEXT_DIR, tokenizer)
 
-        # Save the tokenized data to disk
-        torch.save(tokenized_data, TOKENIZED_DATA_PATH)
-        logger.info(f"Tokenized dataset saved to {TOKENIZED_DATA_PATH}")
+    logger.info("Tokenization completed")
 
 
 if __name__ == '__main__':
