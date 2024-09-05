@@ -8,7 +8,7 @@ from multiprocessing import Pool, cpu_count
 TEXT_DIR = './datasetTest.txt'
 TOKENIZED_DATA_PATH = './tokenized_dataset.pt'
 LOCAL_MODEL_DIR = './bertje'
-CHUNK_SIZE = 10000
+CHUNK_SIZE = 100000
 
 # Set up logging
 logging.basicConfig(filename='tokenization_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
