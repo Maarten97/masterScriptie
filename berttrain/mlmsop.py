@@ -13,7 +13,7 @@ CHECKPOINT_DIR = './model_checkpoints'
 LOCAL_MODEL_DIR = './bertje'
 
 # Training arguments
-MAX_LENGTH = 256
+MAX_LENGTH = 128
 MASK_PROB = 0.15
 BATCH_SIZE = 16
 EPOCHS = 3
@@ -60,13 +60,16 @@ def train(file_path):
     print('Initialized model')
 
     sop_pairs = create_input(file_path)
-    print("SOP Text created")
+    logger.info('SOP pairs loaded')
+    print('SOP pairs loaded')
 
     # Prepare inputs for MLM and SOP
     mlm_text = [f"{pair[0]} {tokenizer.sep_token} {pair[1]}" for pair in sop_pairs]
-    print("MLM Text created")
+    logger.info('MLM text loaded')
+    print('MLM text loaded')
     token_input = tokenizer(mlm_text, return_tensors='pt', max_length=MAX_LENGTH, truncation=True, padding='max_length')
-    print("inputs created")
+    logger.info('Input created')
+    print('inputs created')
     token_input = create_mlm_sop_labels(token_input, mask_prob=MASK_PROB, sentence_pairs=sop_pairs, tokenizer=tokenizer)
     print("inputs labeled")
     logger.info('Loaded inputs with labels')
@@ -75,6 +78,7 @@ def train(file_path):
     sop_pairs.clear()
     mlm_text.clear()
     print("Old variables cleaned")
+    logger.info('Old variables cleaned')
 
     model = model.to(device)
     logger.info(f'Model moved to {device}')

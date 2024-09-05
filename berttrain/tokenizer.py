@@ -7,7 +7,7 @@ from multiprocessing import Pool, cpu_count
 
 TEXT_DIR = './dataset.txt'
 TOKENIZED_DATA_PATH = './tokenized_dataset.pt'
-LOCAL_MODEL_DIR = './bertje'
+LOCAL_MODEL_DIR = './mbert'
 CHUNK_SIZE = 100000
 
 # Set up logging
