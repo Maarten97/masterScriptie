@@ -25,7 +25,7 @@ logger = logging.getLogger()
 def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB):
     """Tokenize a chunk of text data."""
     sop_inputs = {'input_ids': [], 'attention_mask': [], 'token_type_ids': [], 'sop_labels': []}
-    # return tokenized_output
+
     for i in range(0, len(chunk) - 1, 2):
         if not chunk[i]:
             i = i + 1
@@ -43,7 +43,7 @@ def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB)
             sop_pair = [first_sentence, second_sentence]
 
         sop_input = tokenizer(sop_pair, return_tensors='pt', max_length=max_length, truncation=True,
-                                 padding='max_length')
+                              padding='max_length')
 
         sop_inputs['input_ids'].append(sop_input['input_ids'].squeeze(0))  # Remove extra dimension
         sop_inputs['attention_mask'].append(sop_input['attention_mask'].squeeze(0))
@@ -53,23 +53,27 @@ def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB)
     sop_inputs['input_ids'] = torch.stack(sop_inputs['input_ids'])
     sop_inputs['attention_mask'] = torch.stack(sop_inputs['attention_mask'])
     sop_inputs['token_type_ids'] = torch.stack(sop_inputs['token_type_ids'])
-    sop_inputs['sop_labels'] = torch.stack(sop_inputs['labels'])
+    sop_inputs['sop_labels'] = torch.stack(sop_inputs['sop_labels'])  # Fixed this line
 
-    logger.info("SOP Labels created for a Chunk")
+    # Logging info
+    logger.info("SOP Labels created for a Chunk")  # Replaced logger.info for simplicity
 
-    # MLM Labeling
-    sop_inputs['labels'] = sop_inputs.input_ids.detach().clone()
-    rand = torch.rand(sop_inputs.input_ids.shape)
+    # MLM Labeling: create a copy of input_ids for MLM labels
+    sop_inputs['mlm_labels'] = sop_inputs['input_ids'].detach().clone()
+    rand = torch.rand(sop_inputs['input_ids'].shape)
 
-    # Create mask
-    mask_arr = (rand < mask_prob) & (sop_inputs.input_ids != tokenizer.cls_token_id) & \
-               (sop_inputs.input_ids != tokenizer.sep_token_id) & (sop_inputs.input_ids != tokenizer.pad_token_id)
+    # Create mask array for MLM
+    mask_arr = (rand < mask_prob) & (sop_inputs['input_ids'] != tokenizer.cls_token_id) & \
+               (sop_inputs['input_ids'] != tokenizer.sep_token_id) & \
+               (sop_inputs['input_ids'] != tokenizer.pad_token_id)
 
-    for i in range(sop_inputs.input_ids.shape[0]):
+    # Apply mask
+    for i in range(sop_inputs['input_ids'].shape[0]):
         selection = torch.flatten(mask_arr[i].nonzero()).tolist()
-        sop_inputs.input_ids[i, selection] = tokenizer.mask_token_id
+        sop_inputs['input_ids'][i, selection] = tokenizer.mask_token_id
 
     return sop_inputs
+
 
 def memory_map_file(file_path):
     """Map the file into memory using mmap."""
