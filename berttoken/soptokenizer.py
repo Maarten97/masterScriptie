@@ -3,7 +3,7 @@ import random
 import torch
 import logging
 import mmap
-from transformers import BertTokenizer
+from transformers import BertTokenizer, BatchEncoding
 from multiprocessing import Pool, cpu_count, get_context
 
 TEXT_DIR = '../berttoken/datasetTest.txt'
@@ -24,7 +24,7 @@ logger = logging.getLogger()
 
 def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB):
     """Tokenize a chunk of text data."""
-    sop_inputs = {'input_ids': [], 'attention_mask': [], 'token_type_ids': [], 'sop_labels': []}
+    sop_inputs = BatchEncoding({'input_ids': [], 'attention_mask': [], 'token_type_ids': [], 'sop_labels': []})
 
     for i in range(0, len(chunk) - 1, 2):
         if not chunk[i]:
