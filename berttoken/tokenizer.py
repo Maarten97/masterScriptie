@@ -5,21 +5,22 @@ import mmap
 from transformers import BertTokenizer
 from multiprocessing import Pool, cpu_count, get_context
 
-TEXT_DIR = './dataset.txt'
-TOKENIZED_CHUNKS_DIR = './tokenized_chunks'
+TEXT_DIR = '../berttoken/datasetTest.txt'
+TOKENIZED_CHUNKS_DIR = '../berttoken/tokenized_chunks'
 MERGED_DATA_PATH = './merged_tokenized_data.pt'
-LOCAL_MODEL_DIR = './bertje'
+LOCAL_MODEL_DIR = '../berttoken/mbert'
 CHUNK_SIZE = 5000
+MAX_LENGTH = 256
 
 # Ensure the output directory for tokenized chunks exists
 os.makedirs(TOKENIZED_CHUNKS_DIR, exist_ok=True)
 
 # Set up logging
-logging.basicConfig(filename='tokenization_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
+logging.basicConfig(filename='../berttoken/tokenization_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger()
 
 
-def tokenize_chunk(chunk, tokenizer, max_length=128):
+def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH):
     """Tokenize a chunk of text data."""
     tokenized_output = tokenizer(chunk, return_tensors='pt', max_length=max_length, truncation=True,
                                  padding='max_length')
