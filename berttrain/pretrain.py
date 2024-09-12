@@ -55,6 +55,10 @@ def train():
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     logger.info(f'Set up optimizer with learning rate of {LEARNING_RATE} and weight decay of {WEIGHT_DECAY}')
 
+    # Define loss functions
+    mlm_loss_fn = torch.nn.CrossEntropyLoss()
+    sop_loss_fn = torch.nn.CrossEntropyLoss()
+
     # Check for GPU availability
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     torch.cuda.empty_cache()
@@ -84,9 +88,19 @@ def train():
             outputs = model(input_ids=input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask,
                             labels=labels, next_sentence_label=sop_labels)
 
-            # Extract MLM and SOP loss from the outputs
-            mlm_loss = outputs.loss  # Masked Language Modeling loss
-            sop_loss = outputs.next_sentence_loss  # Sentence Order Prediction loss
+            # # Extract MLM and SOP loss from the outputs
+            # mlm_loss = outputs.loss  # Masked Language Modeling loss
+            # sop_loss = outputs.next_sentence_loss  # Sentence Order Prediction loss
+
+            # Extract logits for MLM and SOP
+            mlm_logits = outputs.prediction_logits
+            sop_logits = outputs.seq_relationship_logits
+
+            # Compute MLM loss (CrossEntropyLoss is applied to the MLM logits and the labels)
+            mlm_loss = mlm_loss_fn(mlm_logits.view(-1, mlm_logits.size(-1)), labels.view(-1))
+
+            # Compute SOP loss (CrossEntropyLoss is applied to SOP logits and labels)
+            sop_loss = sop_loss_fn(sop_logits.view(-1, 2), sop_labels.view(-1))
 
             # Combine losses
             loss = (MLM_LOSS_WEIGHT * mlm_loss) + (SOP_LOSS_WEIGHT * sop_loss)
