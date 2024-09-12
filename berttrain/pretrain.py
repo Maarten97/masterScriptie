@@ -11,7 +11,7 @@ CHECKPOINT_DIR = './model_checkpoints'
 LOCAL_MODEL_DIR = './bertje'
 
 # Training arguments
-MAX_LENGTH = 128
+MAX_LENGTH = 512
 MASK_PROB = 0.15
 BATCH_SIZE = 16
 EPOCHS = 3
@@ -57,6 +57,7 @@ def train():
 
     # Check for GPU availability
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    torch.cuda.empty_cache()
     logger.info(f'Initialized device on: {device}')
 
     # Move to GPU
