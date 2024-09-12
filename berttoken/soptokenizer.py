@@ -30,7 +30,10 @@ def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB)
             i = i + 1
 
         first_sentence = chunk[i]
-        second_sentence = chunk[i + 1]
+        if i + 1 <= len(chunk):
+            second_sentence = chunk[i + 1]
+        else:
+            second_sentence = ''
 
         # SOP Labelling
         if random.random() > 0.5 or not second_sentence:
