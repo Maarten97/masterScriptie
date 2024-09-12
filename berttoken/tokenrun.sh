@@ -11,14 +11,14 @@
 echo "nodename :"
 hostname
 
-
 # Load nvidia cuda toolkit and python
 echo "load modules"
+ulimit -n 4096
 module load python/3.10.7
 
 # Move to local directory
 # Define paths
-HOME_DIR=/home/s1722115/mbert
+HOME_DIR=/home/s1722115/bertje
 SCRATCH_DIR=/local/$SLURM_JOB_ID
 
 # Create local scratch directory
@@ -27,7 +27,7 @@ mkdir -p $SCRATCH_DIR
 # Copy Python script and txt file to scratch
 cp $HOME_DIR/tokenizer.py $SCRATCH_DIR/
 cp $HOME_DIR/dataset.txt $SCRATCH_DIR/
-cp -r $HOME_DIR/mbert $SCRATCH_DIR/
+cp -r $HOME_DIR/bertje $SCRATCH_DIR/
 
 # Change to scratch directory
 cd $SCRATCH_DIR

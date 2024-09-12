@@ -6,11 +6,10 @@ import mmap
 from transformers import BertTokenizer, BatchEncoding
 from multiprocessing import Pool, cpu_count, get_context
 
-TEXT_DIR = '../berttoken/datasetTest.txt'
-TOKENIZED_CHUNKS_DIR = '../berttoken/tokenized_chunks'
-MERGED_DATA_PATH = './merged_tokenized_data.pt'
-LOCAL_MODEL_DIR = '../berttoken/mbert'
-CHUNK_SIZE = 1000
+TEXT_DIR = './dataset.txt'
+TOKENIZED_CHUNKS_DIR = './tokenized_chunks'
+LOCAL_MODEL_DIR = './bertje'
+CHUNK_SIZE = 500000
 MAX_LENGTH = 512
 MASK_PROB = 0.15
 
@@ -18,7 +17,7 @@ MASK_PROB = 0.15
 os.makedirs(TOKENIZED_CHUNKS_DIR, exist_ok=True)
 
 # Set up logging
-logging.basicConfig(filename='../berttoken/tokenization_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
+logging.basicConfig(filename='tokenization_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger()
 
 

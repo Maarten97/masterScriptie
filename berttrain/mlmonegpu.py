@@ -43,11 +43,11 @@ class RechtDataset(torch.utils.data.Dataset):
 def train(file_path):
     # Set device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+    token_input = 'tokenized_chunk_3.pt'
     # Initialize the tokenizer and model
-    tokenizer = BertTokenizer.from_pretrained(LOCAL_MODEL_DIR)
-    logger.info('Initialized tokenizer')
-    print('Initialized tokenizer')
+    # tokenizer = BertTokenizer.from_pretrained(LOCAL_MODEL_DIR)
+    # logger.info('Initialized tokenizer')
+    # print('Initialized tokenizer')
     model = BertForPreTraining.from_pretrained(LOCAL_MODEL_DIR)
     logger.info('Initialized model')
     print('Initialized model')
@@ -67,35 +67,37 @@ def train(file_path):
     # shuffled_pairs = [(pair[1], pair[0]) if i % 2 != 0 else pair for i, pair in enumerate(sentence_pairs)]
     # logger.info('Shuffled pairs of sentences')
 
-    sop_pairs = create_input(file_path)
-    print("SOP Text created")
-
-    # Prepare inputs for MLM and SOP
-    mlm_text = [f"{pair[0]} {tokenizer.sep_token} {pair[1]}" for pair in sop_pairs]
-    print("MLM Text created")
-    token_input = tokenizer(mlm_text, return_tensors='pt', max_length=MAX_LENGTH, truncation=True, padding='max_length')
-    print("inputs created")
-    token_input = create_mlm_sop_labels(token_input, mask_prob=MASK_PROB, sentence_pairs=sop_pairs, tokenizer=tokenizer)
-    print("inputs labeled")
-    logger.info('Loaded inputs with labels')
-
-    # Clean variables to save RAM
-    sop_pairs.clear()
-    mlm_text.clear()
-    print("Old variables cleaned")
-
-    model = model.to(device)
-    logger.info(f'Model moved to {device}')
-    print(f'Model running on {device}')
+    # sop_pairs = create_input(file_path)
+    # print("SOP Text created")
+    #
+    # # Prepare inputs for MLM and SOP
+    # mlm_text = [f"{pair[0]} {tokenizer.sep_token} {pair[1]}" for pair in sop_pairs]
+    # print("MLM Text created")
+    # token_input = tokenizer(mlm_text, return_tensors='pt', max_length=MAX_LENGTH, truncation=True, padding='max_length')
+    # print("inputs created")
+    # token_input = create_mlm_sop_labels(token_input, mask_prob=MASK_PROB, sentence_pairs=sop_pairs, tokenizer=tokenizer)
+    # print("inputs labeled")
+    # logger.info('Loaded inputs with labels')
+    #
+    # # Clean variables to save RAM
+    # sop_pairs.clear()
+    # mlm_text.clear()
+    # print("Old variables cleaned")
+    #
+    # model = model.to(device)
+    # logger.info(f'Model moved to {device}')
+    # print(f'Model running on {device}')
 
     # Create dataset and dataloader
-    dataset = RechtDataset(token_input)
+
+    encodings = torch.load(token_input)
+    dataset = RechtDataset(encodings)
     logger.info('Loaded dataset')
     print('Loaded dataset')
     loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
     logger.info('Loaded dataloader')
     print('Loaded dataloader')
-    token_input.clear()
+    # token_input.clear()
 
     # Set up optimizer and scheduler
     optimizer = AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
@@ -119,7 +121,7 @@ def train(file_path):
             input_ids = batch['input_ids'].to(device)
             attention_mask = batch['attention_mask'].to(device)
             labels = batch['labels'].to(device)
-            next_sentence_label = batch['next_sentence_label'].to(device)
+            next_sentence_label = batch['sop_labels'].to(device)
 
             # Forward pass
             outputs = model(input_ids, attention_mask=attention_mask)
