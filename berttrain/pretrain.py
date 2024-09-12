@@ -119,6 +119,10 @@ def train():
             # update parameters
             optimizer.step()
 
+            # Clear cache and delete tensors
+            del input_ids, token_type_ids, attention_mask, sop_labels, labels, outputs, mlm_logits, sop_logits, mlm_loss, sop_loss, loss
+            torch.cuda.empty_cache()
+
         # Log epoch statistics
         avg_epoch_loss = total_epoch_loss / len(loader)
         avg_mlm_loss = mlm_epoch_loss / len(loader)
