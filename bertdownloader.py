@@ -1,10 +1,10 @@
 from huggingface_hub import get_full_repo_name
-from transformers import BertTokenizer, BertForPreTraining
+from transformers import BertTokenizer, BertForPreTraining, RobertaTokenizer, RobertaForSequenceClassification
 import os
 
 # Define the model and tokenizer name
-MODEL_NAME = 'bert-base-multilingual-cased'
-MODEL_DIR = 'berttrain/mbert'  # Define the directory where you want to save the files
+MODEL_NAME = 'pdelobelle/robbert-v2-dutch-base'
+MODEL_DIR = 'berttoken/robbert'  # Define the directory where you want to save the files
 
 # Create the directory if it does not exist
 os.makedirs(MODEL_DIR, exist_ok=True)
@@ -23,10 +23,27 @@ def download_model_and_tokenizer(model_name, save_directory):
     print(f"Model saved to {save_directory}")
 
 # Download and save the model and tokenizer
-download_model_and_tokenizer(MODEL_NAME, MODEL_DIR)
+# download_model_and_tokenizer(MODEL_NAME, MODEL_DIR)
+
 
 print("Download complete!")
 
+
+def roberta_tokenizer(model_name, save_directory):
+    # Download and save the tokenizer
+    print(f"Downloading tokenizer for {model_name}...")
+    tokenizer = RobertaTokenizer.from_pretrained(model_name)
+    tokenizer.save_pretrained(save_directory)
+    print(f"Tokenizer saved to {save_directory}")
+
+    # Download and save the model
+    print(f"Downloading model for {model_name}...")
+    model = RobertaForSequenceClassification.from_pretrained(model_name)
+    model.save_pretrained(save_directory)
+    print(f"Model saved to {save_directory}")
+
+
+print("Download complete!")
 # Test function to check if import works
 # def test_huggingface_hub():
 #     repo_name = "example_repo"
@@ -34,7 +51,8 @@ print("Download complete!")
 #     print(f"Full repo name: {full_repo_name}")
 
 if __name__ == "__main__":
-    download_model_and_tokenizer(model_name=MODEL_NAME, save_directory=MODEL_DIR)
+    # download_model_and_tokenizer(model_name=MODEL_NAME, save_directory=MODEL_DIR)
+    roberta_tokenizer(model_name=MODEL_NAME, save_directory=MODEL_DIR)
 
 
 # import torch
