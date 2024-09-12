@@ -70,7 +70,6 @@ def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB)
     for i in range(sop_inputs.input_ids.shape[0]):
         selection = torch.flatten(mask_arr[i].nonzero()).tolist()
         sop_inputs.input_ids[i, selection] = tokenizer.mask_token_id
-        print(f'Selection: {selection}')
     logger.info("MLM Labels created for a Chunk")
 
     return sop_inputs
