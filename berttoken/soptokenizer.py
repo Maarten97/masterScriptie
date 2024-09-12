@@ -12,6 +12,7 @@ LOCAL_MODEL_DIR = './bertje'
 CHUNK_SIZE = 500000
 MAX_LENGTH = 512
 MASK_PROB = 0.15
+SKIP = 29
 
 # Ensure the output directory for tokenized chunks exists
 os.makedirs(TOKENIZED_CHUNKS_DIR, exist_ok=True)
@@ -120,6 +121,10 @@ def parallel_tokenization_with_mmap(file_path, tokenizer, chunk_size=CHUNK_SIZE)
         input_chunks.append(chunk)
 
     logger.info(f"File split into {len(input_chunks)} chunks for parallel processing")
+
+    # Removing first Chunks due to previous error
+    if SKIP != 0:
+        del input_chunks[:SKIP]
 
     # Use multiprocessing Pool to tokenize in parallel with 'spawn' context
     logger.info(f"Creating Pool with cores = {cpu_count()}")
