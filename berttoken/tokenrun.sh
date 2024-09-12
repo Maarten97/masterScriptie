@@ -25,7 +25,7 @@ SCRATCH_DIR=/local/$SLURM_JOB_ID
 mkdir -p $SCRATCH_DIR
 
 # Copy Python script and txt file to scratch
-cp $HOME_DIR/tokenizer.py $SCRATCH_DIR/
+cp $HOME_DIR/soptokenizer.py $SCRATCH_DIR/
 cp $HOME_DIR/dataset.txt $SCRATCH_DIR/
 cp -r $HOME_DIR/bertje $SCRATCH_DIR/
 
@@ -43,7 +43,7 @@ echo "Name of nodes used          : $SLURM_JOB_NODELIST"
 echo "Starting worker: "
 
 # Run your Python script
-srun python3 tokenizer.py
+srun python3 soptokenizer.py
 
 echo "Exit script"
 # Create a directory in your home folder to store the output
