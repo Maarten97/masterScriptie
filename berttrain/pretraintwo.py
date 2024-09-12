@@ -6,9 +6,9 @@ from transformers import BertForPreTraining
 
 # Paths
 TOKEN_DIR = './tokenized_chunk_0.pt'
-MODEL_OUTPUT_DIR = './bertje-mlm-sop-model'
+MODEL_OUTPUT_DIR = './mbert-mlm-sop-model'
 CHECKPOINT_DIR = './model_checkpoints'
-LOCAL_MODEL_DIR = './bertje'
+LOCAL_MODEL_DIR = './mbert'
 
 # Training arguments
 MAX_LENGTH = 512
