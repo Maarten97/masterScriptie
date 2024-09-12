@@ -6,7 +6,7 @@ import mmap
 from transformers import BertTokenizer, BatchEncoding
 from multiprocessing import Pool, cpu_count, get_context
 
-TEXT_DIR = './dataset.txt'
+TEXT_DIR = './datasetTest.txt'
 TOKENIZED_CHUNKS_DIR = './tokenized_chunks'
 LOCAL_MODEL_DIR = './bertje'
 CHUNK_SIZE = 500000

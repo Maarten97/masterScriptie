@@ -29,6 +29,7 @@ logger = logging.getLogger()
 # Dataset Loader
 class RechtDataset(torch.utils.data.Dataset):
     """Custom Dataset for loading and encoding text data with MLM and SOP objectives."""
+
     def __init__(self, encodings):
         self.encodings = encodings
 
@@ -44,6 +45,9 @@ def train():
     # Create instance of Model
     model = BertForPreTraining.from_pretrained(LOCAL_MODEL_DIR)
     logger.info('Initialized model')
+
+    # Wrap model with DataParallel for multi-GPU support
+    model = torch.nn.DataParallel(model)
 
     # Create an instance of RechtDataset
     dataset = RechtDataset(loading_data())
@@ -64,10 +68,10 @@ def train():
     torch.cuda.empty_cache()
     logger.info(f'Initialized device on: {device}')
 
-    # Move to GPU
+    # Move to GPU (DataParallel will handle multi-GPU)
     model.to(device)
 
-    #Start Training Loop
+    # Start Training Loop
     model.train()
     logger.info('Started training')
     print('Started training')
@@ -87,10 +91,6 @@ def train():
 
             outputs = model(input_ids=input_ids, token_type_ids=token_type_ids, attention_mask=attention_mask,
                             labels=labels, next_sentence_label=sop_labels)
-
-            # # Extract MLM and SOP loss from the outputs
-            # mlm_loss = outputs.loss  # Masked Language Modeling loss
-            # sop_loss = outputs.next_sentence_loss  # Sentence Order Prediction loss
 
             # Extract logits for MLM and SOP
             mlm_logits = outputs.prediction_logits
@@ -131,7 +131,7 @@ def train():
             f'Epoch [{epoch + 1}/{EPOCHS}], Loss: {avg_epoch_loss:.4f}, '
             f'MLM Loss: {avg_mlm_loss:.4f}, SOP Loss: {avg_sop_loss:.4f}')
 
-        #Saving checkpoint for every Epoch
+        # Saving checkpoint for every Epoch
         save_model(model, epoch)
 
     logger.info('Finished training')
@@ -149,8 +149,9 @@ def save_model(model, epoch, checkpoint_dir=CHECKPOINT_DIR):
     """Save the model checkpoint."""
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
-    model.save_pretrained(f'{checkpoint_dir}/model_epoch_{epoch}.bin')
+    model.module.save_pretrained(f'{checkpoint_dir}/model_epoch_{epoch}.bin')  # Access the original model with .module
     logger.info(f'Model checkpoint saved for epoch {epoch}')
+
 
 def log_hyperparameters():
     """Log the hyperparameters used for the training."""
@@ -170,7 +171,7 @@ def log_hyperparameters():
 
 
 def main():
-    # Set up and initiale Logging
+    # Set up and initialize Logging
     log_hyperparameters()
     # Load pretokenized dataset into Dataset
     train()
