@@ -10,8 +10,8 @@ TEXT_DIR = '../berttoken/datasetTest.txt'
 TOKENIZED_CHUNKS_DIR = '../berttoken/tokenized_chunks'
 MERGED_DATA_PATH = './merged_tokenized_data.pt'
 LOCAL_MODEL_DIR = '../berttoken/mbert'
-CHUNK_SIZE = 5000
-MAX_LENGTH = 256
+CHUNK_SIZE = 1000
+MAX_LENGTH = 512
 MASK_PROB = 0.15
 
 # Ensure the output directory for tokenized chunks exists
@@ -37,10 +37,10 @@ def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB)
         if random.random() > 0.5 or not second_sentence:
             label = 0
             random_i = random.randint(0, len(chunk) - 1)
-            sop_pair = [first_sentence, chunk[random_i]]
+            sop_pair = [f'{first_sentence} {tokenizer.sep_token} {chunk[random_i]}']
         else:
             label = 1
-            sop_pair = [first_sentence, second_sentence]
+            sop_pair = [f'{first_sentence} {tokenizer.sep_token} {second_sentence}']
 
         sop_input = tokenizer(sop_pair, return_tensors='pt', max_length=max_length, truncation=True,
                               padding='max_length')
@@ -59,18 +59,20 @@ def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB)
     logger.info("SOP Labels created for a Chunk")  # Replaced logger.info for simplicity
 
     # MLM Labeling: create a copy of input_ids for MLM labels
-    sop_inputs['mlm_labels'] = sop_inputs['input_ids'].detach().clone()
-    rand = torch.rand(sop_inputs['input_ids'].shape)
+    sop_inputs['labels'] = sop_inputs.input_ids.detach().clone()
+    rand = torch.rand(sop_inputs.input_ids.shape)
 
     # Create mask array for MLM
-    mask_arr = (rand < mask_prob) & (sop_inputs['input_ids'] != tokenizer.cls_token_id) & \
-               (sop_inputs['input_ids'] != tokenizer.sep_token_id) & \
-               (sop_inputs['input_ids'] != tokenizer.pad_token_id)
+    mask_arr = (rand < mask_prob) * (sop_inputs.input_ids != tokenizer.cls_token_id) * \
+               (sop_inputs.input_ids != tokenizer.sep_token_id) * \
+               (sop_inputs.input_ids != tokenizer.pad_token_id)
 
     # Apply mask
-    for i in range(sop_inputs['input_ids'].shape[0]):
+    for i in range(sop_inputs.input_ids.shape[0]):
         selection = torch.flatten(mask_arr[i].nonzero()).tolist()
-        sop_inputs['input_ids'][i, selection] = tokenizer.mask_token_id
+        sop_inputs.input_ids[i, selection] = tokenizer.mask_token_id
+        print(f'Selection: {selection}')
+    logger.info("MLM Labels created for a Chunk")
 
     return sop_inputs
 
@@ -132,7 +134,6 @@ def parallel_tokenization_with_mmap(file_path, tokenizer, chunk_size=CHUNK_SIZE)
             # Remove the processed chunk to free up memory
             del input_chunks[i]
             tokenized_chunk = None  # Also free the tokenized chunk
-            logger.info(f"Tokenized chunk {i} done")
 
     # Close the memory-mapped file after use to release resources
     mmapped_file.close()
