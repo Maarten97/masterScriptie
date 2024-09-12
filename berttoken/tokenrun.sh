@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J tokenBertje                  # Name of the job
+#SBATCH -J tokenmbert                  # Name of the job
 #SBATCH -c 16                           # Number of cores
 #SBATCH --mail-type=END,FAIL     # Email status changes
 #SBATCH --partition=main,dmb  # Partition
@@ -18,7 +18,7 @@ module load python/3.10.7
 
 # Move to local directory
 # Define paths
-HOME_DIR=/home/s1722115/bertje
+HOME_DIR=/home/s1722115/mbert
 SCRATCH_DIR=/local/$SLURM_JOB_ID
 
 # Create local scratch directory
@@ -27,7 +27,7 @@ mkdir -p $SCRATCH_DIR
 # Copy Python script and txt file to scratch
 cp $HOME_DIR/soptokenizer.py $SCRATCH_DIR/
 cp $HOME_DIR/dataset.txt $SCRATCH_DIR/
-cp -r $HOME_DIR/bertje $SCRATCH_DIR/
+cp -r $HOME_DIR/mbert $SCRATCH_DIR/
 
 # Change to scratch directory
 cd $SCRATCH_DIR
