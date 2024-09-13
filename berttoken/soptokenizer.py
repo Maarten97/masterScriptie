@@ -6,13 +6,14 @@ import mmap
 from transformers import BertTokenizer, BatchEncoding
 from multiprocessing import Pool, cpu_count, get_context
 
-TEXT_DIR = './datasetTest.txt'
+TEXT_DIR = './dataset.txt'
 TOKENIZED_CHUNKS_DIR = './tokenized_chunks'
 LOCAL_MODEL_DIR = './bertje'
 CHUNK_SIZE = 500000
-MAX_LENGTH = 512
+MAX_LENGTH = 256
 MASK_PROB = 0.15
-SKIP = 29
+SKIP = 0
+CORES = 16
 
 # Ensure the output directory for tokenized chunks exists
 os.makedirs(TOKENIZED_CHUNKS_DIR, exist_ok=True)
@@ -59,7 +60,7 @@ def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB)
     sop_inputs['sop_labels'] = torch.stack(sop_inputs['sop_labels'])  # Fixed this line
 
     # Logging info
-    logger.info("SOP Labels created for a Chunk")  # Replaced logger.info for simplicity
+    logger.info("SOP Labels created for a Chunk")
 
     # MLM Labeling: create a copy of input_ids for MLM labels
     sop_inputs['labels'] = sop_inputs.input_ids.detach().clone()
@@ -118,28 +119,30 @@ def parallel_tokenization_with_mmap(file_path, tokenizer, chunk_size=CHUNK_SIZE)
         chunk = read_chunk_from_memory(mmapped_file, chunk_size)
         if not chunk:
             break
-        input_chunks.append(chunk)
+        input_chunks.append((chunk, tokenizer))
 
     logger.info(f"File split into {len(input_chunks)} chunks for parallel processing")
 
     # Removing first Chunks due to previous error
     if SKIP != 0:
         del input_chunks[:SKIP]
+        logger.info(f"Now {len(input_chunks)} chunks after removing {SKIP} chuncks")
+
+    if not os.path.exists(TOKENIZED_CHUNKS_DIR):
+        os.makedirs(TOKENIZED_CHUNKS_DIR)
 
     # Use multiprocessing Pool to tokenize in parallel with 'spawn' context
-    logger.info(f"Creating Pool with cores = {cpu_count()}")
-    with get_context("spawn").Pool(cpu_count()) as pool:
-        for i, chunk in enumerate(input_chunks):
-            tokenized_chunk = pool.starmap(tokenize_chunk, [(chunk, tokenizer)])
+    logger.info(f"Creating Pool with cores = {CORES}, Official count: {cpu_count()}")
+
+    with get_context("spawn").Pool(CORES) as pool:
+        tokenized_chunk = pool.starmap(tokenize_chunk, input_chunks)
+        for i, tokenized_chunk in enumerate(tokenized_chunk):
 
             # Save each tokenized chunk directly to .pt file
             chunk_output_path = os.path.join(TOKENIZED_CHUNKS_DIR, f"tokenized_chunk_{i}.pt")
-            save_tokenized_data_pt(chunk_output_path, tokenized_chunk[0])
+            logger.info(f"Attempting to save tokenized chunk {i} to {chunk_output_path}")
+            save_tokenized_data_pt(chunk_output_path, tokenized_chunk[i])
             logger.info(f"Saved tokenized chunk {i} to {chunk_output_path}")
-
-            # Remove the processed chunk to free up memory
-            del input_chunks[i]
-            tokenized_chunk = None  # Also free the tokenized chunk
 
     # Close the memory-mapped file after use to release resources
     mmapped_file.close()
