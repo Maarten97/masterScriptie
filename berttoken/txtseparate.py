@@ -2,7 +2,7 @@ import os
 
 # Global variables for filename and number of lines per file
 BASE_FILENAME = "output_file"
-LINES_PER_FILE = 4000
+LINES_PER_FILE = 2000000
 OUTPUT_FOLDER = "output"
 
 
@@ -38,6 +38,7 @@ def split_file(input_file):
             # If the current file reaches the limit, reset the line counter
             if line_counter >= LINES_PER_FILE:
                 line_counter = 0
+                print(f'Finished generating TXT file # {file_counter - 1}')
 
         # Close the last output file if still open
         if outfile:
@@ -46,4 +47,4 @@ def split_file(input_file):
 
 # Call the function with the path to your large txt file
 if __name__ == '__main__':
-    split_file("datasetTest.txt")
+    split_file("dataset.txt")
