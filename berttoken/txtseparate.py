@@ -1,5 +1,6 @@
 import csv
 import os
+import pandas as pd
 
 # Global variables for filename and number of lines per file
 BASE_FILENAME = "output_file"
@@ -47,24 +48,31 @@ def split_file(input_file):
             outfile.close()
 
 
-def count_lines(input_file, output_csv):
+def count_lines(input_file, output_csv, output2_csv):
     """
     Parses the input file and writes the line number and word count to a CSV file.
     """
     line_counter = 0
     with (open(input_file, 'r', encoding='utf-8', errors='ignore') as infile,
-          open(output_csv, 'w', newline='', encoding='utf-8') as csvfile):
+          open(output_csv, 'w', newline='', encoding='utf-8') as csvfile,
+          open(output2_csv, 'w', newline='', encoding='utf-8') as largefile):
         csv_writer = csv.writer(csvfile)
+        csv_writer2 = csv.writer(largefile)
         # Write header for CSV
-        csv_writer.writerow(['Word Count'])
+        csv_writer.writerow(['sentence_length'])
+        csv_writer2.writerow(['line', 'sentence_length'])
 
         for line in infile:
             line_counter += 1
             # Count words by splitting the line based on whitespace
             word_count = len(line.split())
             # Write the line number and word count to the CSV
-            if word_count != 0:
+            if word_count != 0 and word_count < 101:
                 csv_writer.writerow([word_count])
+            if word_count > 100:
+                csv_writer.writerow([101])
+                csv_writer2.writerow([line_counter, word_count])
+
 
         print(f'{line_counter} lines parsed')
 
@@ -92,9 +100,33 @@ def print_lines(input_file, output_txt):
                 txtfile.write(line + '\n')
 
 
+def frequence_to_csv(csv_file_path, output_csv_file_path):
+    # Load the CSV file into a pandas DataFrame
+    df = pd.read_csv(csv_file_path)
+
+    # Assuming the column containing sentence lengths is named 'sentence_length'
+    # If the column has a different name, replace 'sentence_length' with the actual column name
+    sentence_lengths = df['sentence_length']
+
+    # Set all sentence lengths greater than 100 to 101
+    sentence_lengths = sentence_lengths.apply(lambda x: 101 if x > 100 else x)
+
+    # Count the frequency of each sentence length
+    frequency = sentence_lengths.value_counts().sort_index()
+
+    # Create a new DataFrame to store the frequency data
+    frequency_df = pd.DataFrame({'Length': frequency.index, 'Frequency': frequency.values})
+
+    # Save the frequency data to a new CSV file
+    frequency_df.to_csv(output_csv_file_path, index=False)
+
+    print(f"Frequency data has been saved to {output_csv_file_path}")
+
+
 # Call the function with the path to your large txt file
 if __name__ == '__main__':
-    # count_lines(INPUT_FILE, "log2.csv")
+    # count_lines(INPUT_FILE, "log4.csv", 'loglarge2.csv')
     # find_lines(INPUT_FILE, 1824223)
-    print_lines(INPUT_FILE, 'lines.txt')
+    # print_lines(INPUT_FILE, 'lines.txt')
     # split_file(INPUT_FILE)
+    frequence_to_csv('log4.csv', 'frequence.csv')
