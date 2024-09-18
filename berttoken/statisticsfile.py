@@ -6,19 +6,19 @@ import seaborn as sns
 # Load the dataset
 # Replace 'your_data.csv' with the actual path to your CSV file
 # Assuming the CSV has a column 'sentence_length'
-df = pd.read_csv('log2.csv', usecols=['Word Count'])
+df = pd.read_csv('loglarge2.csv', usecols=['sentence_length'])
 
 # Filter out rows where sentence_length is 0
-df = df[df['Word Count'] != 0]
+df = df[df['sentence_length'] != 0]
 
 # Compute Descriptive Statistics
-mean_length = df['Word Count'].mean()
-median_length = df['Word Count'].median()
-mode_length = df['Word Count'].mode()[0]  # Mode can have multiple values, take the first
-std_dev_length = df['Word Count'].std()
-min_length = df['Word Count'].min()
-max_length = df['Word Count'].max()
-quantiles = df['Word Count'].quantile([0.25, 0.50, 0.75])
+mean_length = df['sentence_length'].mean()
+median_length = df['sentence_length'].median()
+mode_length = df['sentence_length'].mode()[0]  # Mode can have multiple values, take the first
+std_dev_length = df['sentence_length'].std()
+min_length = df['sentence_length'].min()
+max_length = df['sentence_length'].max()
+quantiles = df['sentence_length'].quantile([0.25, 0.50, 0.75])
 
 # Print the statistics
 print("Descriptive Statistics (Excluding sentence_length = 0):")
@@ -34,7 +34,7 @@ print(f"75th Percentile: {quantiles[0.75]}")
 
 # Plotting the Histogram
 plt.figure(figsize=(10, 6))
-plt.hist(df['Word Count'], bins=50, color='blue', alpha=0.7)
+plt.hist(df['sentence_length'], bins=100, color='blue', alpha=0.7)
 plt.title('Sentence Length Distribution (Excluding sentence_length = 0)')
 plt.xlabel('Sentence Length')
 plt.ylabel('Frequency')
@@ -43,8 +43,8 @@ plt.show()
 
 # Plotting the Boxplot
 plt.figure(figsize=(8, 6))
-sns.boxplot(x=df['Word Count'], color='green')
-plt.title('Boxplot of Sentence Length (Excluding Word Count = 0)')
+sns.boxplot(x=df['sentence_length'], color='green')
+plt.title('Boxplot of Sentence Length (Excluding sentence_length = 0)')
 plt.xlabel('Sentence Length')
 plt.grid(True)
 plt.show()
