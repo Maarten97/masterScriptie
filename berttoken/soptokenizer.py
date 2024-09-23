@@ -8,7 +8,7 @@ from multiprocessing import Pool, cpu_count, get_context
 
 TEXT_DIR = './dataset.txt'
 TOKENIZED_CHUNKS_DIR = './tokenized_chunks'
-LOCAL_MODEL_DIR = './bertje'
+LOCAL_MODEL_DIR = './mbert'
 CHUNK_SIZE = 500000
 MAX_LENGTH = 256
 MASK_PROB = 0.15

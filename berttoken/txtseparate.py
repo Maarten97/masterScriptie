@@ -7,6 +7,7 @@ BASE_FILENAME = "output_file"
 LINES_PER_FILE = 2000000
 OUTPUT_FOLDER = "output"
 INPUT_FILE = "dataset.txt"
+LIMIT_LARGE = False
 
 
 def split_file(input_file):
@@ -67,13 +68,14 @@ def count_lines(input_file, output_csv, output2_csv):
             # Count words by splitting the line based on whitespace
             word_count = len(line.split())
             # Write the line number and word count to the CSV
-            if word_count != 0 and word_count < 101:
+            if LIMIT_LARGE:
+                if word_count != 0 and word_count < 101:
+                    csv_writer.writerow([word_count])
+                if word_count > 100:
+                    csv_writer.writerow([101])
+                    csv_writer2.writerow([line_counter, word_count])
+            else:
                 csv_writer.writerow([word_count])
-            if word_count > 100:
-                csv_writer.writerow([101])
-                csv_writer2.writerow([line_counter, word_count])
-
-
         print(f'{line_counter} lines parsed')
 
 
@@ -108,8 +110,9 @@ def frequence_to_csv(csv_file_path, output_csv_file_path):
     # If the column has a different name, replace 'sentence_length' with the actual column name
     sentence_lengths = df['sentence_length']
 
-    # Set all sentence lengths greater than 100 to 101
-    sentence_lengths = sentence_lengths.apply(lambda x: 101 if x > 100 else x)
+    if LIMIT_LARGE:
+        # Set all sentence lengths greater than 100 to 101
+        sentence_lengths = sentence_lengths.apply(lambda x: 101 if x > 100 else x)
 
     # Count the frequency of each sentence length
     frequency = sentence_lengths.value_counts().sort_index()
@@ -125,8 +128,8 @@ def frequence_to_csv(csv_file_path, output_csv_file_path):
 
 # Call the function with the path to your large txt file
 if __name__ == '__main__':
-    # count_lines(INPUT_FILE, "log4.csv", 'loglarge2.csv')
+    count_lines(INPUT_FILE, "logall.csv", 'loglarge102.csv')
     # find_lines(INPUT_FILE, 1824223)
     # print_lines(INPUT_FILE, 'lines.txt')
     # split_file(INPUT_FILE)
-    frequence_to_csv('log4.csv', 'frequence.csv')
+    # frequence_to_csv('log101.csv', 'frequence.csv')

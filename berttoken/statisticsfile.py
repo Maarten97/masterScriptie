@@ -6,7 +6,7 @@ import seaborn as sns
 # Load the dataset
 # Replace 'your_data.csv' with the actual path to your CSV file
 # Assuming the CSV has a column 'sentence_length'
-df = pd.read_csv('loglarge2.csv', usecols=['sentence_length'])
+df = pd.read_csv('logall.csv', usecols=['sentence_length'])
 
 # Filter out rows where sentence_length is 0
 df = df[df['sentence_length'] != 0]
@@ -19,6 +19,7 @@ std_dev_length = df['sentence_length'].std()
 min_length = df['sentence_length'].min()
 max_length = df['sentence_length'].max()
 quantiles = df['sentence_length'].quantile([0.25, 0.50, 0.75])
+ninefive = df['sentence_length'].quantile([0.95])
 
 # Print the statistics
 print("Descriptive Statistics (Excluding sentence_length = 0):")
@@ -31,23 +32,24 @@ print(f"Maximum: {max_length}")
 print(f"25th Percentile: {quantiles[0.25]}")
 print(f"50th Percentile (Median): {quantiles[0.50]}")
 print(f"75th Percentile: {quantiles[0.75]}")
+print(f"95th Percentile: {ninefive}")
 
 # Plotting the Histogram
-plt.figure(figsize=(10, 6))
-plt.hist(df['sentence_length'], bins=100, color='blue', alpha=0.7)
-plt.title('Sentence Length Distribution (Excluding sentence_length = 0)')
-plt.xlabel('Sentence Length')
-plt.ylabel('Frequency')
-plt.grid(True)
-plt.show()
+# plt.figure(figsize=(10, 6))
+# plt.hist(df['sentence_length'], bins=100, color='blue', alpha=0.7)
+# plt.title('Sentence Length Distribution (Excluding sentence_length = 0)')
+# plt.xlabel('Sentence Length')
+# plt.ylabel('Frequency')
+# plt.grid(True)
+# plt.show()
 
-# Plotting the Boxplot
-plt.figure(figsize=(8, 6))
-sns.boxplot(x=df['sentence_length'], color='green')
-plt.title('Boxplot of Sentence Length (Excluding sentence_length = 0)')
-plt.xlabel('Sentence Length')
-plt.grid(True)
-plt.show()
+# # Plotting the Boxplot
+# plt.figure(figsize=(8, 6))
+# sns.boxplot(x=df['sentence_length'], color='green')
+# plt.title('Boxplot of Sentence Length (Excluding sentence_length = 0)')
+# plt.xlabel('Sentence Length')
+# plt.grid(True)
+# plt.show()
 
 # Import necessary libraries
 # import pandas as pd
