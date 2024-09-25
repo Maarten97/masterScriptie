@@ -2,7 +2,7 @@ import os
 import random
 import torch
 import logging
-from transformers import BertTokenizer, BatchEncoding
+from transformers import RobertaTokenizer, BatchEncoding
 
 TEXT_DIR = './output'
 TOKENIZED_CHUNKS_DIR = './tokenized_robbert'
@@ -37,6 +37,7 @@ def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB)
         if not sentence:
             continue
 
+        # Tokenize sentence for MLM
         mlm_input = tokenizer(sentence, return_tensors='pt', max_length=max_length, truncation=True,
                               padding='max_length')
 
@@ -46,19 +47,20 @@ def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB)
     mlm_inputs['input_ids'] = torch.stack(mlm_inputs['input_ids'])
     mlm_inputs['attention_mask'] = torch.stack(mlm_inputs['attention_mask'])
 
-    # MLM Labeling: create a copy of input_ids for MLM labels
+    # Create MLM labels: clone input_ids for labels
     mlm_inputs['labels'] = mlm_inputs.input_ids.detach().clone()
     rand = torch.rand(mlm_inputs.input_ids.shape)
 
-    # Create mask array for MLM
+    # Create mask array for MLM, avoiding special tokens
     mask_arr = (rand < mask_prob) * (mlm_inputs.input_ids != tokenizer.cls_token_id) * \
                (mlm_inputs.input_ids != tokenizer.sep_token_id) * \
                (mlm_inputs.input_ids != tokenizer.pad_token_id)
 
-    # Apply mask
+    # Apply mask to input_ids
     for i in range(mlm_inputs.input_ids.shape[0]):
         selection = torch.flatten(mask_arr[i].nonzero()).tolist()
         mlm_inputs.input_ids[i, selection] = tokenizer.mask_token_id
+
     logger.info("MLM Labels created for a Chunk")
 
     return mlm_inputs
@@ -81,7 +83,7 @@ if __name__ == '__main__':
     logger.info('Directories checked')
 
     # Initialize tokenizer
-    tokenizer = BertTokenizer.from_pretrained(LOCAL_MODEL_DIR)
+    tokenizer = RobertaTokenizer.from_pretrained(LOCAL_MODEL_DIR)
     logger.info('Initialized tokenizer')
 
     for files in os.listdir(TEXT_DIR):
