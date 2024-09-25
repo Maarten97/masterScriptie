@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH -J tokenmbert                  # Name of the job
-#SBATCH -c 16                           # Number of cores
+#SBATCH -J tokenbertje                  # Name of the job
+#SBATCH -c 2                           # Number of cores
 #SBATCH --mail-type=END,FAIL     # Email status changes
 #SBATCH --partition=main,dmb  # Partition
-#SBATCH --mem=64GB
-#SBATCH --time=1-01:00:00
+#SBATCH --mem=32GB
+#SBATCH --time=08:00:00
 
 # Diagnostic information
 # Display node name
@@ -18,16 +18,17 @@ module load python/3.10.7
 
 # Move to local directory
 # Define paths
-HOME_DIR=/home/s1722115/mbert
+HOME_DIR=/home/s1722115
 SCRATCH_DIR=/local/$SLURM_JOB_ID
 
 # Create local scratch directory
 mkdir -p $SCRATCH_DIR
 
 # Copy Python script and txt file to scratch
-cp $HOME_DIR/soptokenizer.py $SCRATCH_DIR/
+cp $HOME_DIR/tok/filetokensop.py $SCRATCH_DIR/
+cp $HOME_DIR/tok/txtseparate.py $SCRATCH_DIR/
 cp $HOME_DIR/dataset.txt $SCRATCH_DIR/
-cp -r $HOME_DIR/mbert $SCRATCH_DIR/
+cp -r $HOME_DIR/tok/bertje $SCRATCH_DIR/
 
 # Change to scratch directory
 cd $SCRATCH_DIR
@@ -43,7 +44,9 @@ echo "Name of nodes used          : $SLURM_JOB_NODELIST"
 echo "Starting worker: "
 
 # Run your Python script
-srun python3 soptokenizer.py
+srun python3 txtseparate.py
+echo "First finished"
+srun python3 filetokensop.py
 
 echo "Exit script"
 # Create a directory in your home folder to store the output
