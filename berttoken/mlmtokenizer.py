@@ -7,7 +7,7 @@ from transformers import RobertaTokenizer, BatchEncoding
 from multiprocessing import Pool, cpu_count, get_context
 
 TEXT_DIR = './dataset.txt'
-TOKENIZED_CHUNKS_DIR = './tokenized_chunks'
+TOKENIZED_CHUNKS_DIR = 'output'
 LOCAL_MODEL_DIR = './robbert'
 CHUNK_SIZE = 500000
 MAX_LENGTH = 512

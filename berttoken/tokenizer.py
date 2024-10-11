@@ -6,7 +6,7 @@ from transformers import BertTokenizer
 from multiprocessing import Pool, cpu_count, get_context
 
 TEXT_DIR = '../berttoken/datasetTest.txt'
-TOKENIZED_CHUNKS_DIR = '../berttoken/tokenized_chunks'
+TOKENIZED_CHUNKS_DIR = 'output'
 MERGED_DATA_PATH = './merged_tokenized_data.pt'
 LOCAL_MODEL_DIR = '../berttoken/mbert'
 CHUNK_SIZE = 5000

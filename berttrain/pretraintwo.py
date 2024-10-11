@@ -5,20 +5,18 @@ import logging
 from transformers import BertForPreTraining
 
 # Paths
-TOKEN_DIR = './tokenized_chunk_0.pt'
+TOKEN_DIR = './tokenized_chunksnew/datasetTest1.pt'
 MODEL_OUTPUT_DIR = './mbert-mlm-sop-model'
-CHECKPOINT_DIR = './model_checkpoints'
+CHECKPOINT_DIR = './model_check'
 LOCAL_MODEL_DIR = './mbert'
 
 # Training arguments
-MAX_LENGTH = 512
-MASK_PROB = 0.15
 BATCH_SIZE = 16
-EPOCHS = 3
+EPOCHS = 2
 LEARNING_RATE = 1e-5
 WEIGHT_DECAY = 0.01
-MLM_LOSS_WEIGHT = 1.5
-SOP_LOSS_WEIGHT = 0.5
+MLM_LOSS_WEIGHT = 1.25
+SOP_LOSS_WEIGHT = 0.75
 WARMUP_STEPS = 10000
 
 # Set up logging
@@ -158,8 +156,6 @@ def log_hyperparameters():
     hyperparameters = {
         'PRETRAINED_MODEL_NAME': LOCAL_MODEL_DIR,
         'TOKENIZER_NAME': LOCAL_MODEL_DIR,
-        'MAX_LENGTH': MAX_LENGTH,
-        'MASK_PROB': MASK_PROB,
         'BATCH_SIZE': BATCH_SIZE,
         'EPOCHS': EPOCHS,
         'LEARNING_RATE': LEARNING_RATE,
