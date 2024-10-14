@@ -42,42 +42,42 @@ echo "Name of nodes used          : $SLURM_JOB_NODELIST"
 echo "Copying files: "
 
 cp -r $MODEL_DIR $SCRATCH_DIR/
-cp $CODE_DIR/trainbert1.py $SCRATCH_DIR/
+cp $CODE_DIR/trainmbert1.py $SCRATCH_DIR/
 cp $TOKEN_DIR/output_file_1.pt $SCRATCH_DIR/
 
 cd $SCRATCH_DIR
 
 # Run your Python script
 echo "Starting run script 1"
-srun python3 trainbert1.py
+srun python3 trainmbert1.py
 echo "End script"
 
 cp -r $SCRATCH_DIR/mbert_check1 $OUTPUT_DIR
 cp $SCRATCH_DIR/training_log1.txt $OUTPUT_DIR
 
 rm -rf $SCRATCH_DIR/training_log1.txt
-rm -rf $SCRATCH_DIR/trainbert1.py
+rm -rf $SCRATCH_DIR/trainmbert1.py
 rm -rf $SCRATCH_DIR/output_file_1.pt
 
-cp $CODE_DIR/trainbert2.py $SCRATCH_DIR/
+cp $CODE_DIR/trainmbert2.py $SCRATCH_DIR/
 cp $TOKEN_DIR/output_file_2.pt $SCRATCH_DIR/
 
 echo "Starting run script 2"
-srun python3 trainbert2.py
+srun python3 trainmbert2.py
 echo "End script"
 
 cp -r $SCRATCH_DIR/mbert_check2 $OUTPUT_DIR
 cp $SCRATCH_DIR/training_log2.txt $OUTPUT_DIR
 
 rm -rf $SCRATCH_DIR/training_log2.txt
-rm -rf $SCRATCH_DIR/trainbert2.py
+rm -rf $SCRATCH_DIR/trainmbert2.py
 rm -rf $SCRATCH_DIR/output_file_2.pt
 
-cp $CODE_DIR/trainbert3.py $SCRATCH_DIR/
+cp $CODE_DIR/trainmbert3.py $SCRATCH_DIR/
 cp $TOKEN_DIR/output_file_3.pt $SCRATCH_DIR/
 
 echo "Starting run script 3"
-srun python3 trainbert3.py
+srun python3 trainmbert3.py
 echo "End script"
 
 # Copy everything from scratch to the new directory in your home folder
