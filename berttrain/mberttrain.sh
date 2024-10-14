@@ -41,7 +41,18 @@ echo "Number of threads per core  : $SLURM_THREADS_PER_CORE"
 echo "Name of nodes used          : $SLURM_JOB_NODELIST"
 echo "Copying files: "
 
-cp -r $MODEL_DIR $SCRATCH_DIR/
+# Move mBERT to local directory
+cp -r "/home/s1722115/model/mbert" $SCRATCH_DIR/
+
+# Verify the mbert directory was copied
+if [ -d "$SCRATCH_DIR/mbert" ]; then
+    echo "mbert directory copied successfully."
+    ls $SCRATCH_DIR/mbert  # List contents for confirmation
+else
+    echo "Error: mbert directory not copied!"
+    exit 1  # Exit if the copy failed
+fi
+
 cp $CODE_DIR/trainmbert1.py $SCRATCH_DIR/
 cp $TOKEN_DIR/output_file_1.pt $SCRATCH_DIR/
 

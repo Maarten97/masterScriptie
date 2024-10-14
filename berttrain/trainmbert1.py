@@ -42,7 +42,9 @@ class RechtDataset(torch.utils.data.Dataset):
 def train():
     """General def for training model on MLM and SOP objectives."""
     # Create instance of Model
-    model = BertForPreTraining.from_pretrained(LOCAL_MODEL_DIR)
+    if not os.path.exists(LOCAL_MODEL_DIR):
+        logger.error("BERT Model not in folder in scratch root")
+    model = BertForPreTraining.from_pretrained(LOCAL_MODEL_DIR, local_files_only=True)
     logger.info('Initialized model')
 
     # Wrap model with DataParallel for multi-GPU support
