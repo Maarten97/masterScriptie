@@ -2,13 +2,15 @@ import os
 import torch
 import logging
 
-from transformers import BertForPreTraining
+from transformers import BertForPreTraining, BertTokenizer
 
 # Paths
-TOKEN_DIR = './tokenized_chunksnew/datasetTest1.pt'
-MODEL_OUTPUT_DIR = './mbert-mlm-sop-model'
-CHECKPOINT_DIR = './model_check'
-LOCAL_MODEL_DIR = './mbert'
+STEP = 1
+MODEL = 'mbert'
+TOKEN_DIR = f'./output_file_{STEP}.pt'
+CHECKPOINT_DIR = f'./{MODEL}_check{STEP}'
+LOCAL_MODEL_DIR = f'./{MODEL}_check{STEP - 1}'
+# LOCAL_MODEL_DIR = f'./{MODEL}'
 
 # Training arguments
 BATCH_SIZE = 16
@@ -17,7 +19,6 @@ LEARNING_RATE = 1e-5
 WEIGHT_DECAY = 0.01
 MLM_LOSS_WEIGHT = 1.25
 SOP_LOSS_WEIGHT = 0.75
-WARMUP_STEPS = 10000
 
 # Set up logging
 logging.basicConfig(filename='training_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
@@ -129,8 +130,8 @@ def train():
             f'Epoch [{epoch + 1}/{EPOCHS}], Loss: {avg_epoch_loss:.4f}, '
             f'MLM Loss: {avg_mlm_loss:.4f}, SOP Loss: {avg_sop_loss:.4f}')
 
-        # Saving checkpoint for every Epoch
-        save_model(model, epoch)
+    # Saving checkpoint
+    save_model(model)
 
     logger.info('Finished training')
     logger.info('Model saved')
@@ -143,17 +144,21 @@ def loading_data(token_dir=TOKEN_DIR):
     return torch.load(token_dir, map_location=torch.device('cpu'))
 
 
-def save_model(model, epoch, checkpoint_dir=CHECKPOINT_DIR):
+def save_model(model, checkpoint_dir=CHECKPOINT_DIR):
     """Save the model checkpoint."""
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
-    model.module.save_pretrained(f'{checkpoint_dir}/model_epoch_{epoch}.bin')  # Access the original model with .module
-    logger.info(f'Model checkpoint saved for epoch {epoch}')
+    model.save_pretrained(f'{checkpoint_dir}')
+    tokenizer = BertTokenizer.from_pretrained(LOCAL_MODEL_DIR)
+    tokenizer.save_pretrained(checkpoint_dir)
+    logger.info(f'Model checkpoint saved for step {STEP}')
 
 
 def log_hyperparameters():
     """Log the hyperparameters used for the training."""
     hyperparameters = {
+        'STEP': STEP,
+        'MODEL': MODEL,
         'PRETRAINED_MODEL_NAME': LOCAL_MODEL_DIR,
         'TOKENIZER_NAME': LOCAL_MODEL_DIR,
         'BATCH_SIZE': BATCH_SIZE,
