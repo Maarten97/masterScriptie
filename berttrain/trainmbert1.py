@@ -46,19 +46,20 @@ def train():
         logger.error("BERT Model not in folder in scratch root")
     model = BertForPreTraining.from_pretrained(LOCAL_MODEL_DIR, local_files_only=True)
     logger.info('Initialized model')
-
-    # Wrap model with DataParallel for multi-GPU support
-    model = torch.nn.DataParallel(model)
+    print('Initialized model')
 
     # Create an instance of RechtDataset
     dataset = RechtDataset(loading_data())
     logger.info(f'Loaded {len(dataset)} samples')
+    print(f'Loaded {len(dataset)} samples')
 
     # Initialize Loader and Optimizer
     loader = torch.utils.data.DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
     logger.info(f'Loaded {len(loader)} batches with {BATCH_SIZE} samples')
+    print(f'Loaded {len(loader)} batches with {BATCH_SIZE} samples')
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     logger.info(f'Set up optimizer with learning rate of {LEARNING_RATE} and weight decay of {WEIGHT_DECAY}')
+    print(f'Set up optimizer with learning rate of {LEARNING_RATE}')
 
     # Define loss functions
     mlm_loss_fn = torch.nn.CrossEntropyLoss()
@@ -68,8 +69,9 @@ def train():
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     torch.cuda.empty_cache()
     logger.info(f'Initialized device on: {device}')
+    print(f'Initialized device on: {device}')
 
-    # Move to GPU (DataParallel will handle multi-GPU)
+    # Move to GPU
     model.to(device)
 
     # Start Training Loop
@@ -177,6 +179,8 @@ def main():
     # Set up and initialize Logging
     log_hyperparameters()
     # Load pretokenized dataset into Dataset
+    logger.info('Start train method')
+    print('Start train method')
     train()
 
 

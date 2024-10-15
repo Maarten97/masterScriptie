@@ -11,12 +11,6 @@
 echo "nodename :"
 hostname
 
-# Load nvidia cuda toolkit and python
-echo "load modules"
-ulimit -n 4096
-module load nvidia/cuda-12.4
-module load python/3.10.7
-
 # Move to local directory
 # Define paths
 echo "Define Paths"
@@ -42,7 +36,14 @@ echo "Name of nodes used          : $SLURM_JOB_NODELIST"
 echo "Copying files: "
 
 # Move mBERT to local directory
-cp -r "/home/s1722115/model/mbert" $SCRATCH_DIR/
+mkdir $SCRATCH_DIR
+mkdir $SCRATCH_DIR/mbert
+cp "/home/s1722115/model/mbert/config.json" $SCRATCH_DIR/mbert/
+cp "/home/s1722115/model/mbert/model.safetensors" $SCRATCH_DIR/mbert/
+cp "/home/s1722115/model/mbert/special_tokens_map.json" $SCRATCH_DIR/mbert/
+cp "/home/s1722115/model/mbert/tokenizer_config.json" $SCRATCH_DIR/mbert/
+cp "/home/s1722115/model/mbert/vocab.txt" $SCRATCH_DIR/mbert/
+
 
 # Verify the mbert directory was copied
 if [ -d "$SCRATCH_DIR/mbert" ]; then
@@ -52,6 +53,12 @@ else
     echo "Error: mbert directory not copied!"
     exit 1  # Exit if the copy failed
 fi
+
+# Load nvidia cuda toolkit and python
+echo "load modules"
+ulimit -n 4096
+module load nvidia/cuda-12.4
+module load python/3.10.7
 
 cp $CODE_DIR/trainmbert1.py $SCRATCH_DIR/
 cp $TOKEN_DIR/output_file_1.pt $SCRATCH_DIR/
@@ -98,7 +105,3 @@ cp -r $SCRATCH_DIR/* $OUTPUT_DIR/
 rm -rf $SCRATCH_DIR
 
 echo "SH script ended fully"
-
-
-
-
