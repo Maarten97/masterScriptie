@@ -7,6 +7,8 @@
 #SBATCH --mem=20GB
 #SBATCH --time=4-01:00:00
 
+set -e  # Exit script on any error (non-zero exit code)
+
 # Diagnostic information, Display node name
 echo "nodename :"
 hostname

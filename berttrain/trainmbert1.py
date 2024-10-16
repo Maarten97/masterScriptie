@@ -12,8 +12,17 @@ CHECKPOINT_DIR = f'./{MODEL}_check{STEP}'
 LOCAL_MODEL_DIR = f'./{MODEL}_check{STEP - 1}'
 # LOCAL_MODEL_DIR = f'./{MODEL}'
 
+# TestPaths
+# STEP = 2
+# MODEL = 'mbert'
+# TOKEN_DIR = './datasetTest.pt'
+# CHECKPOINT_DIR = f'./{MODEL}_check{STEP}'
+# # LOCAL_MODEL_DIR = 'C:/Users/looij/PycharmProjects/masterScriptie/bertmodel/mbert'
+# # LOCAL_MODEL_DIR = f'./{MODEL}'
+# LOCAL_MODEL_DIR = f'./{MODEL}_check{STEP - 1}'
+
 # Training arguments
-BATCH_SIZE = 16
+BATCH_SIZE = 32
 EPOCHS = 2
 LEARNING_RATE = 1e-5
 WEIGHT_DECAY = 0.01
@@ -152,7 +161,7 @@ def save_model(model, checkpoint_dir=CHECKPOINT_DIR):
     """Save the model checkpoint."""
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
-    model.save_pretrained(f'{checkpoint_dir}')
+    model.save_pretrained(checkpoint_dir)
     tokenizer = BertTokenizer.from_pretrained(LOCAL_MODEL_DIR)
     tokenizer.save_pretrained(checkpoint_dir)
     logger.info(f'Model checkpoint saved for step {STEP}')
