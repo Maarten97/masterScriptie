@@ -2,25 +2,33 @@ import os
 import random
 import torch
 import logging
-import mmap
 from transformers import BertTokenizer, BatchEncoding
-from multiprocessing import Pool, cpu_count, get_context
 
-TEXT_DIR = './dataset.txt'
-TOKENIZED_CHUNKS_DIR = 'output'
-LOCAL_MODEL_DIR = './mbert'
-CHUNK_SIZE = 500000
-MAX_LENGTH = 256
+TEXT_DIR = './output'
+# TEXT_DIR = './tokenized_chunksnew'
+TOKENIZED_CHUNKS_DIR = './tokenized_bertje'
+LOCAL_MODEL_DIR = './bertje'
+# LOCAL_MODEL_DIR = 'C:/Users/looij/PycharmProjects/masterScriptie/bertmodel/bertje'
+MAX_LENGTH = 100
 MASK_PROB = 0.15
-SKIP = 0
-CORES = 16
 
-# Ensure the output directory for tokenized chunks exists
-os.makedirs(TOKENIZED_CHUNKS_DIR, exist_ok=True)
 
-# Set up logging
-logging.basicConfig(filename='tokenization_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
-logger = logging.getLogger()
+def check_dir():
+    # Ensure the input directory for dataset exists
+    if not os.path.exists(TEXT_DIR):
+        raise FileNotFoundError(f"The file {TEXT_DIR} does not exist.")
+    if not os.path.exists(LOCAL_MODEL_DIR):
+        raise FileNotFoundError(f"The file {LOCAL_MODEL_DIR} does not exist.")
+    # Ensure the output directory for tokenized chunks exists
+    os.makedirs(TOKENIZED_CHUNKS_DIR, exist_ok=True)
+
+
+def read_file(file_path):
+    lines = []
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            lines.append(line.strip())
+    return lines
 
 
 def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB):
@@ -79,28 +87,6 @@ def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB)
     return sop_inputs
 
 
-def memory_map_file(file_path):
-    """Map the file into memory using mmap."""
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"The file {file_path} does not exist.")
-
-    with open(file_path, 'r+b') as f:
-        # Memory-map the file, size 0 means whole file
-        mmapped_file = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-
-    return mmapped_file
-
-
-def read_chunk_from_memory(mmapped_file, chunk_size):
-    """Read a chunk of data from the memory-mapped file."""
-    lines = []
-    line = mmapped_file.readline().decode('utf-8')
-    while line and len(lines) < chunk_size:
-        lines.append(line.strip())
-        line = mmapped_file.readline().decode('utf-8')
-    return lines
-
-
 def save_tokenized_data_pt(output_file, tokenized_data):
     """Save tokenized data directly to a .pt file."""
     # Save the tokenized tensor directly to .pt file
@@ -108,56 +94,29 @@ def save_tokenized_data_pt(output_file, tokenized_data):
     logger.info(f"Saved tokenized data to {output_file}")
 
 
-def parallel_tokenization_with_mmap(file_path, tokenizer, chunk_size=CHUNK_SIZE):
-    """Tokenize the text data in parallel using memory-mapped file and multiple CPU cores."""
-    mmapped_file = memory_map_file(file_path)
-    logger.info(f"Memory-mapped {file_path} for tokenization")
+if __name__ == '__main__':
+    # Set up logging
+    logging.basicConfig(filename='tokenization_logbertje.txt', level=logging.INFO, format='%(asctime)s %(message)s')
+    logger = logging.getLogger()
 
-    input_chunks = []
-    while True:
-        chunk = read_chunk_from_memory(mmapped_file, chunk_size)
-        if not chunk:
-            break
-        input_chunks.append((chunk, tokenizer))
+    # Check if all dirs are correct
+    check_dir()
+    logger.info('Directories checked')
 
-    logger.info(f"File split into {len(input_chunks)} chunks for parallel processing")
-
-    # Removing first Chunks due to previous error
-    if SKIP != 0:
-        del input_chunks[:SKIP]
-        logger.info(f"Now {len(input_chunks)} chunks after removing {SKIP} chuncks")
-
-    if not os.path.exists(TOKENIZED_CHUNKS_DIR):
-        os.makedirs(TOKENIZED_CHUNKS_DIR)
-
-    # Use multiprocessing Pool to tokenize in parallel with 'spawn' context
-    logger.info(f"Creating Pool with cores = {CORES}, Official count: {cpu_count()}")
-
-    with get_context("spawn").Pool(CORES) as pool:
-        tokenized_chunk = pool.starmap(tokenize_chunk, input_chunks)
-        for i, tokenized_chunk in enumerate(tokenized_chunk):
-
-            # Save each tokenized chunk directly to .pt file
-            chunk_output_path = os.path.join(TOKENIZED_CHUNKS_DIR, f"tokenized_chunk_{i}.pt")
-            logger.info(f"Attempting to save tokenized chunk {i} to {chunk_output_path}")
-            save_tokenized_data_pt(chunk_output_path, tokenized_chunk[i])
-            logger.info(f"Saved tokenized chunk {i} to {chunk_output_path}")
-
-    # Close the memory-mapped file after use to release resources
-    mmapped_file.close()
-
-
-def main():
     # Initialize tokenizer
     tokenizer = BertTokenizer.from_pretrained(LOCAL_MODEL_DIR)
     logger.info('Initialized tokenizer')
 
-    # Start the tokenization process with memory-mapped input
-    logger.info("Processing from memory-mapped text")
-    parallel_tokenization_with_mmap(TEXT_DIR, tokenizer)
+    for files in os.listdir(TEXT_DIR):
+        file_path = os.path.join(TEXT_DIR, files)
 
-    logger.info("Tokenization completed")
+        chunk = read_file(file_path)
+        logger.info('Loaded file {}'.format(files))
 
+        tokenized_data = tokenize_chunk(chunk, tokenizer)
+        logger.info('Tokenized data of file {}'.format(files))
 
-if __name__ == '__main__':
-    main()
+        output_dir = os.path.join(TOKENIZED_CHUNKS_DIR, os.path.splitext(files)[0] + '.pt')
+        save_tokenized_data_pt(os.path.join(output_dir), tokenized_data)
+        logger.info(f'Saved tokenized data to {output_dir}')
+    logger.info('Done')

@@ -4,11 +4,11 @@ import torch
 import logging
 from transformers import BertTokenizer, BatchEncoding
 
-# TEXT_DIR = './output'
-TEXT_DIR = './tokenized_chunksnew'
-TOKENIZED_CHUNKS_DIR = './tokenized_chunksnew'
-# LOCAL_MODEL_DIR = './mbert'
-LOCAL_MODEL_DIR = 'C:/Users/looij/PycharmProjects/masterScriptie/bertmodel/bertje'
+TEXT_DIR = './output'
+# TEXT_DIR = './tokenized_chunksnew'
+TOKENIZED_CHUNKS_DIR = './tokenized_mbert'
+LOCAL_MODEL_DIR = './mbert'
+# LOCAL_MODEL_DIR = 'C:/Users/looij/PycharmProjects/masterScriptie/bertmodel/bertje'
 MAX_LENGTH = 100
 MASK_PROB = 0.15
 

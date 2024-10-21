@@ -4,10 +4,10 @@ import torch
 import logging
 from transformers import RobertaTokenizer, BatchEncoding
 
-# TEXT_DIR = './output'
-TEXT_DIR = './tokenized_chunksnew'
+TEXT_DIR = './output'
+# TEXT_DIR = './tokenized_chunksnew'
 TOKENIZED_CHUNKS_DIR = './tokenized_robbert'
-LOCAL_MODEL_DIR = 'C:/Users/looij/PycharmProjects/masterScriptie/bertmodel/robbert'
+LOCAL_MODEL_DIR = './robbert'
 MAX_LENGTH = 100
 MASK_PROB = 0.15
 
@@ -34,9 +34,17 @@ def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB)
     """Tokenize a chunk of text data."""
     mlm_inputs = BatchEncoding({'input_ids': [], 'attention_mask': [], 'labels': []})
 
-    for sentence in chunk:
-        if not sentence:
-            continue
+    for i in range(0, len(chunk) - 1, 2):
+        if not chunk[i]:
+            i = i + 1
+
+        first_sentence = chunk[i]
+        if i + 1 <= len(chunk):
+            second_sentence = chunk[i + 1]
+        else:
+            second_sentence = ''
+
+        sentence = [f'{first_sentence} {tokenizer.sep_token} {second_sentence}']
 
         # Tokenize sentence for MLM
         mlm_input = tokenizer(sentence, return_tensors='pt', max_length=max_length, truncation=True,

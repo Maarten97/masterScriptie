@@ -128,8 +128,8 @@ def frequence_to_csv(csv_file_path, output_csv_file_path):
 
 # Call the function with the path to your large txt file
 if __name__ == '__main__':
-    count_lines(INPUT_FILE, "logall.csv", 'loglarge102.csv')
+    # count_lines(INPUT_FILE, "logall.csv", 'loglarge102.csv')
     # find_lines(INPUT_FILE, 1824223)
     # print_lines(INPUT_FILE, 'lines.txt')
-    # split_file(INPUT_FILE)
+    split_file(INPUT_FILE)
     # frequence_to_csv('log101.csv', 'frequence.csv')
