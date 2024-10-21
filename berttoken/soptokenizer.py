@@ -40,8 +40,7 @@ def tokenize_chunk(chunk, tokenizer, max_length=MAX_LENGTH, mask_prob=MASK_PROB)
         # SOP Labelling
         if random.random() > 0.5 or not second_sentence:
             label = 0
-            random_i = random.randint(0, len(chunk) - 1)
-            sop_pair = [f'{first_sentence} {tokenizer.sep_token} {chunk[random_i]}']
+            sop_pair = [f'{second_sentence} {tokenizer.sep_token} {first_sentence}']
         else:
             label = 1
             sop_pair = [f'{first_sentence} {tokenizer.sep_token} {second_sentence}']
