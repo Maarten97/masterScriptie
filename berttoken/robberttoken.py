@@ -4,10 +4,10 @@ import torch
 import logging
 from transformers import RobertaTokenizer, BatchEncoding
 
-TEXT_DIR = './output'
+TEXT_DIR = 'D:/output'
 # TEXT_DIR = './tokenized_chunksnew'
-TOKENIZED_CHUNKS_DIR = './tokenized_robbert'
-LOCAL_MODEL_DIR = './robbert'
+TOKENIZED_CHUNKS_DIR = 'D:/tokenized_robbert'
+LOCAL_MODEL_DIR = 'C:/Users/looij/PycharmProjects/masterScriptie/bertmodel/robbert'
 MAX_LENGTH = 100
 MASK_PROB = 0.15
 
