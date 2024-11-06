@@ -1,79 +1,106 @@
 import torch
+from torch.utils.data import DataLoader, Dataset
+from transformers import BertForSequenceClassification, BertTokenizer, AdamW, get_scheduler, Trainer, TrainingArguments
+from datasets import load_dataset
 import logging
 import os
-from transformers import BertForPreTraining, BertTokenizer
-from datasets import load_dataset
-import evaluate
 import json
+from tqdm import tqdm
+import evaluate
 
 MODEL = 'bertje'
-MODEL_DIR = 'path'
-
+MODEL_DIR = 'C:/Users/looijengam/PycharmProjects/masterScriptie/bert/bertje'
 EPOCHS = 3
 BATCH_SIZE = 32
 LEARNING_RATE = 0.001
 WEIGHT_DECAY = 0.0001
 
 # Set up logging
-logging.basicConfig(filename=f'validation_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
+logging.basicConfig(filename='validation_log.txt', level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger()
 
+tokenizer = BertTokenizer.from_pretrained(MODEL_DIR)
+
 def initialize_model():
-    """Prepare the data for training and validation"""
-    # Create instance of Model
     if not os.path.exists(MODEL_DIR):
-        logger.error("BERT Model not in folder in scratch root")
-        raise FileNotFoundError
-    model = BertForPreTraining.from_pretrained(MODEL_DIR, local_files_only=True)
-    tokenizer = BertTokenizer.from_pretrained(MODEL_DIR)
-    logger.info('Initialized model')
-    return model, tokenizer
+        logger.error("BERT Model not found in the specified directory.")
+        raise FileNotFoundError("BERT Model not in specified directory.")
+    model = BertForSequenceClassification.from_pretrained(MODEL_DIR, local_files_only=True)
+    logger.info('Model and tokenizer initialized.')
+    return model
 
 def initialize_device():
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.empty_cache()
-    logger.info(f'Initialized device on: {device}')
+    logger.info(f'Device initialized on: {device}')
     return device
 
-def prepare_data():
-    """Prepare the data for training and validation"""
-    dataset = load_dataset('coastalcph/multi_eurlex', 'nl', trust_remote_code=True)
-    train_dataset = dataset['train']
-    test_dataset = dataset['test']
-    eval_dataset = dataset['validation']
+def prepare_data(split):
+    dataset = load_dataset('coastalcph/multi_eurlex', 'nl', split=split, trust_remote_code=True)
+    return dataset
 
-    with open('eurovoc_concepts.json') as file:
-        label_index = {idx: concept for idx, concept in enumerate(json.load(file)['level_1'])}
-        logger.info(f'EUROVOC Concepts: {'level_1'} ({len(label_index)})')
+def token_data(batch):
+    return tokenizer(batch['text'], padding='max_length', truncation=True, max_length=512, return_tensors='pt')
 
-    return train_dataset, test_dataset, eval_dataset
+def load_labels(label_level):
+    with open('./eurovoc_concepts.json') as file:
+        return {idx: concept for idx, concept in enumerate(json.load(file)[label_level])}
 
-def token_data(dataset, tokenizer):
-    """Tokenize the data"""
-    tokenized = ''
-    return tokenized
+def token_label(batch, label_index):
+    num_labels = len(label_index)
+    token_labels = torch.zeros((len(batch['labels']), num_labels), dtype=torch.float32)
+    for i, labels in enumerate(batch['labels']):
+        token_labels[i, labels] = 1.0
+    batch['labels'] = token_labels
+    return batch
 
 def train():
-    """Train the data"""
-    model, tokenizer = initialize_model()
-    print('model initializd')
-    train_dataset, test_dataset, eval_dataset = prepare_data()
-    print('data prepared')
-    train_token = token_data(train_dataset, tokenizer)
-    test_token = token_data(test_dataset, tokenizer)
-    eval_token = token_data(eval_dataset, tokenizer)
-    print('data tokenized')
+    model = initialize_model()
+    device = initialize_device()
 
-def valid():
-    """Save the model output and metrics."""
+    # Load and tokenize data
+    train_dataset = prepare_data('train')
+    label_index = load_labels('level_1')
+    train_dataset = train_dataset.map(token_data, batched=True)
+    train_dataset = train_dataset.map(token_label, batched=True)
+
+    eval_dataset = prepare_data('validation')
+    eval_dataset = eval_dataset.map(lambda x: token_data(x, tokenizer), batched=True)
+    eval_dataset = eval_dataset.map(lambda x: token_label(x, label_index), batched=True)
+
+    print()
+
+
+
+    # Define training arguments
+    training_args = TrainingArguments(
+        output_dir='./results',
+        num_train_epochs=3,
+        per_device_train_batch_size=8,
+        per_device_eval_batch_size=8,
+        warmup_steps=500,
+        weight_decay=0.01,
+        logging_dir='./logs',
+        logging_steps=10,
+    )
+
+    # Initialize Trainer
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        tokenizer=tokenizer,
+    )
+
+#
+# def valid():
 
 
 def log_hyperparameters():
-    """Log the hyperparameters used for the training."""
     hyperparameters = {
         'MODEL': MODEL,
-        'PRETRAINED_MODEL_NAME': MODEL_DIR,
-        'TOKENIZER_NAME': MODEL_DIR,
+        'MODEL_DIR': MODEL_DIR,
         'BATCH_SIZE': BATCH_SIZE,
         'EPOCHS': EPOCHS,
         'LEARNING_RATE': LEARNING_RATE,
@@ -82,9 +109,11 @@ def log_hyperparameters():
     logger.info(f'Hyperparameters: {hyperparameters}')
 
 def main():
-    # Set up and initialize Logging
     log_hyperparameters()
-    # Load pretokenized dataset into Dataset
-    logger.info('Start train method')
-    print('Start train method')
+    logger.info('Starting training process')
     train()
+    logger.info('Starting validation process')
+    # valid()
+
+if __name__ == '__main__':
+    main()
