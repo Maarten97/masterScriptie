@@ -8,7 +8,7 @@ from sklearn.metrics import f1_score, accuracy_score
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 
-MODEL_DIR = 'C:/Users/looij/PycharmProjects/masterScriptie/bertmodel/bertje'
+MODEL_DIR = 'E:/Programming/PycharmProjects/masterScriptie/berttoken/bertje'
 
 # Check if GPU is available
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
