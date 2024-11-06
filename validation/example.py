@@ -43,9 +43,9 @@ eval_dataset = tokenized_datasets['validation']
 test_dataset = tokenized_datasets['test']
 
 # Remove unnecessary columns and set format for PyTorch tensors
-train_dataset = train_dataset.remove_columns(['text']).with_format('torch')
-eval_dataset = eval_dataset.remove_columns(['text']).with_format('torch')
-test_dataset = test_dataset.remove_columns(['text']).with_format('torch')
+train_dataset = train_dataset.remove_columns(['celex_id', 'text']).with_format('torch')
+eval_dataset = eval_dataset.remove_columns(['celex_id', 'text']).with_format('torch')
+test_dataset = test_dataset.remove_columns(['celex_id', 'text']).with_format('torch')
 
 # Create DataLoader instances for each dataset split
 batch_size = 16  # Adjust batch size as needed
